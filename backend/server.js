@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const bodyParser = require('body-parser');
 
 // const rssmsuRoutes = require('./routes/rssmsu');
 
@@ -27,7 +28,7 @@ app.use('/api/yatriks', require('./routes/yatrikRoutes'));
 app.use('/api/vaiyavach', require('./routes/vaiyavchRoutes'));
 
 // Razorpay webhook endpoint (ensure raw body for signature verification)
-app.post('/api/yatriks/razorpay-webhook', express.json({ type: '*/*' }), require('./controllers/yatrikController').razorpayWebhook);
+app.post('/api/yatriks/razorpay-webhook', bodyParser.raw({ type: '*/*' }), require('./controllers/yatrikController').razorpayWebhook);
 
 const PORT = process.env.PORT || 5000;
 

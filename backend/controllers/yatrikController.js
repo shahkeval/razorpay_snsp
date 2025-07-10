@@ -94,20 +94,21 @@ exports.createPaymentLink = [
         reference_id: newYatrik._id.toString(),
       });
       // Store Payment record
-      console.log('raza',paymentLink.paymentId)
+      newYatrik.paymentLink = paymentLink.short_url;
+      await newYatrik.save();
       const payment = new Payment({
         yatrikNo: newYatrik.yatrikNo,
         orderId: paymentLink.id,
-        paymentId:paymentLink.paymentId,
+        paymentId: paymentLink.payment_id || '',
+        signature: '',
         amount: 500,
         currency: 'INR',
         status: 'created',
-        linkState: 'generated',
         link: paymentLink.short_url,
       });
       await payment.save();
       // Return payment link to frontend
-      res.json({ paymentLink: paymentLink.short_url });
+      res.json({ paymentLink: paymentLink.short_url, yatrikNo: newYatrik.yatrikNo, orderId: paymentLink.id });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -116,7 +117,6 @@ exports.createPaymentLink = [
 
 // 2. Razorpay Webhook for payment status
 exports.razorpayWebhook = async (req, res) => {
-  // Razorpay sends JSON, verify signature
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
   const signature = req.headers['x-razorpay-signature'];
   const body = JSON.stringify(req.body);
@@ -128,10 +128,11 @@ exports.razorpayWebhook = async (req, res) => {
   if (event === 'payment_link.paid') {
     const paymentLinkId = req.body.payload.payment_link.entity.id;
     const paymentId = req.body.payload.payment.entity.id;
+    const paymentSignature = signature;
     // Update Payment and Yatrik
     const payment = await Payment.findOneAndUpdate(
       { orderId: paymentLinkId },
-      { status: 'paid', paymentId, paymentCompletedAt: new Date() },
+      { status: 'paid', paymentId, signature: paymentSignature, paymentCompletedAt: new Date() },
       { new: true }
     );
     if (payment) {
@@ -147,13 +148,18 @@ exports.razorpayWebhook = async (req, res) => {
 // 3. Verify payment status (frontend polling after redirect)
 exports.verifyPayment = async (req, res) => {
   try {
-    const { yatrikNo } = req.query;
-    const yatrik = await Yatrik.findOne({ yatrikNo });
-    if (!yatrik) return res.status(404).json({ message: 'Yatrik not found' });
-    if (yatrik.isPaid === 'paid') {
+    const { yatrikNo, orderId } = req.query;
+    let payment;
+    if (orderId) {
+      payment = await Payment.findOne({ orderId });
+    } else if (yatrikNo) {
+      payment = await Payment.findOne({ yatrikNo });
+    }
+    if (!payment) return res.status(404).json({ status: 'not_found' });
+    if (payment.status === 'paid') {
       return res.json({ status: 'paid' });
     } else {
-      return res.json({ status: 'unpaid' });
+      return res.json({ status: payment.status });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });

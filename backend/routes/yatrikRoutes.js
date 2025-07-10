@@ -20,6 +20,6 @@ router.get('/summary', yatrikController.getYatrikSummary);
 // Payment Link flow
 router.post('/create-payment-link', yatrikController.createPaymentLink);
 router.post('/razorpay-webhook', yatrikController.razorpayWebhook);
-router.get('/verify-payment', yatrikController.verifyPayment);
+router.get('/verify-payment', yatrikController.verifyPayment); // Accepts yatrikNo or orderId as query param
 
 module.exports = router; 

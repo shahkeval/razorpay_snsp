@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
   yatrikNo: { type: String, required: true, index: true },
-  orderId: { type: String, required: true, unique: true },
+  orderId: { type: String, required: true },
   paymentId: { type: String },
   signature: { type: String },
   amount: { type: Number, required: true },

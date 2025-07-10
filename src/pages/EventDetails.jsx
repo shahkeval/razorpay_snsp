@@ -220,6 +220,37 @@ const EventDetails = () => {
     }
   }, [yatraRegistrationData.yatrikPhoto]);
 
+  // Place this useEffect at the top level, not inside any condition
+  useEffect(() => {
+    // Only run polling if on the callback page
+    if (window.location.pathname.includes('yatrik-payment-callback')) {
+      setPaymentStatus('verifying');
+      const yatrikNo = sessionStorage.getItem('yatrikNo');
+      const orderId = sessionStorage.getItem('orderId');
+      let pollCount = 0;
+      const poll = setInterval(async () => {
+        try {
+          const res = await axios.get(`http://localhost:5000/api/yatriks/verify-payment?yatrikNo=${yatrikNo}&orderId=${orderId}`);
+          if (res.data.status === 'paid') {
+            setPaymentStatus('paid');
+            setPaymentThankYou(true);
+            clearInterval(poll);
+          } else if (pollCount > 15) { // Timeout after ~1min
+            setPaymentStatus('error');
+            setPaymentError('Payment verification timed out. Please contact support.');
+            clearInterval(poll);
+          }
+        } catch (err) {
+          setPaymentStatus('error');
+          setPaymentError('Payment verification failed. Please contact support.');
+          clearInterval(poll);
+        }
+        pollCount++;
+      }, 4000);
+      return () => clearInterval(poll);
+    }
+  }, []);
+
   if (!event) {
     return (
       <div className="event-not-found">
@@ -631,7 +662,10 @@ const EventDetails = () => {
       formData.append('familyConfirmation', yatraRegistrationData.familyConfirmation);
       // Send to backend to create payment link
       const res = await axios.post('http://localhost:5000/api/yatriks/create-payment-link', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      const { paymentLink } = res.data;
+      const { paymentLink, yatrikNo, orderId } = res.data;
+      // Store yatrikNo/orderId in session for callback polling
+      sessionStorage.setItem('yatrikNo', yatrikNo);
+      sessionStorage.setItem('orderId', orderId);
       // Redirect to payment link
       window.location.href = paymentLink;
     } catch (err) {

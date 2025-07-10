@@ -26,6 +26,7 @@ const yatrikSchema = new mongoose.Schema({
     yatrikNo: { type: String, unique: true },
     yatrikPhoto: { type: String, required: true },
     isPaid: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid', required: true },
+    paymentLink: { type: String },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });
