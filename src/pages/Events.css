@@ -1,0 +1,685 @@
+/* Events.css */
+:root {
+    --primary-bg: #fff8f0;
+    --accent-color: #700b0b;
+    --text-color: #333;
+    --light-gray: #e5e5e5;
+    --medium-gray: #999;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+    --border-radius: 12px;
+  }
+  
+/* Events Page Styles */
+  .events-container {
+    background-color: var(--primary-bg);
+    padding: 2rem;
+    min-height: 80vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .events-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+  
+  .events-header h1 {
+    color: var(--accent-color);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .events-header p {
+    color: var(--text-color);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .events-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .tab-button {
+    background-color: white;
+    color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+    border-radius: 30px;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 180px;
+  }
+  
+  .tab-button:hover {
+    background-color: rgba(112, 11, 11, 0.1);
+  }
+  
+  .tab-button.active {
+    background-color: var(--accent-color);
+    color: white;
+  }
+  
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+  
+  .no-events {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+  
+  .no-events h3 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+  }
+  
+  .events-cta {
+    text-align: center;
+    margin-top: 3rem;
+    padding: 2rem;
+    background-color: rgba(112, 11, 11, 0.05);
+    border-radius: 12px;
+  }
+  
+  .events-cta h3 {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+  }
+  
+/* Event Card Styles */
+.event-card {
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.event-card-image {
+    position: relative;
+    overflow: hidden;
+    height: 200px;
+    object-fit: fill;
+}
+
+.event-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    transition: transform 0.5s ease;
+}
+
+.event-card:hover .event-card-image img {
+    transform: scale(1.05);
+}
+
+.event-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.event-card-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.event-card-content h3 {
+    color: var(--accent-color);
+    margin: 0 0 0.8rem;
+    font-size: 1.3rem;
+    line-height: 1.3;
+}
+
+.event-meta {
+    margin-bottom: 0px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.meta-item i {
+    color: var(--accent-color);
+    margin-right: 0.5rem;
+    margin-top: 0.15rem;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    opacity: 0.8;
+}
+
+.meta-item p {
+    margin: 0;
+    color: var(--medium-gray);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.event-description {
+    color: var(--text-color);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+}
+
+.view-details-btn {
+    align-self: flex-start;
+    background-color: transparent;
+    color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+    border-radius: 25px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: auto;
+}
+
+.view-details-btn:hover {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* Event Details Styles */
+.event-details-container {
+    background-color: var(--primary-bg);
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.breadcrumb {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    color: var(--medium-gray);
+}
+
+.breadcrumb a {
+    color: var(--accent-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.event-details-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.event-info {
+    flex: 2;
+    min-width: 300px;
+}
+
+.event-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.event-header h1 {
+    color: var(--accent-color);
+    font-size: 2rem;
+    margin: 0;
+}
+
+.event-image-container {
+    margin-bottom: 1.5rem;
+}
+
+.event-feature-image {
+    width: 100%;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    object-fit: cover;
+}
+
+.event-meta-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.event-description-text {
+    white-space: pre-line;
+    line-height: 1.6;
+}
+
+.event-description-full h2 {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+.event-description-full p {
+    color: var(--text-color);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.event-schedule h3 {
+    margin-bottom: 0.5rem;
+    color: var(--accent-color);
+}
+
+.event-schedule ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.event-schedule li {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.schedule-time {
+    font-weight: bold;
+    color: var(--accent-color);
+    min-width: 80px;
+}
+
+.schedule-activity {
+    color: var(--text-color);
+}
+
+.event-gallery h3 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.gallery-item img {
+    width: 100%;
+    border-radius: var(--border-radius);
+    object-fit: cover;
+    box-shadow: var(--shadow);
+}
+
+.registration-container {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.registration-child {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.registration-form-wrapper h2 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.success-message {
+    text-align: center;
+    color: var(--accent-color);
+}
+
+.success-message i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.success-message h3 {
+    margin: 0.5rem 0;
+}
+
+.success-message p {
+    color: var(--text-color);
+}
+
+form {
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.form-group input,
+.form-group textarea {
+    padding: 0.6rem;
+    border: 1px solid var(--light-gray);
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+.submit-btn {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-left: 29%;
+    margin-top: 10px;
+}
+
+.submit-btn:hover {
+    background-color: #5a0909;
+}
+
+.submit-btn:disabled {
+    background-color: var(--medium-gray);
+    cursor: not-allowed;
+}
+
+.contact-info {
+    font-size: 0.9rem;
+    color: var(--medium-gray);
+    text-align: center;
+}
+
+.contact-info a {
+    display: block;
+    color: var(--accent-color);
+    text-decoration: none;
+    margin-top: 0.3rem;
+}
+
+.contact-info a:hover {
+    text-decoration: underline;
+}
+
+.event-highlights h3 {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+.event-highlights ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    color: var(--text-color);
+}
+
+.related-events {
+    margin-top: 3rem;
+}
+
+.related-events h2 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.related-events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.related-event-card {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.related-event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.related-event-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: fill;
+}
+
+.related-event-info {
+    padding: 1rem;
+}
+
+.related-event-info h4 {
+    margin: 0 0 0.5rem;
+    color: var(--accent-color);
+}
+
+.related-event-info p {
+    margin: 0;
+    color: var(--medium-gray);
+    font-size: 0.9rem;
+}
+
+/* Donation Form Styles */
+.donation-button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.donation-form-wrapper {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 1rem;
+}
+
+.donation-form-wrapper input,
+.donation-form-wrapper textarea {
+    width: 100%;
+    padding: 0.6rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--light-gray);
+    border-radius: 6px;
+}
+
+.donation-form-wrapper button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.error-message {
+    color: red;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.success-message {
+    color: green;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.qr-code {
+    max-width: 100%;
+    height: auto;
+    margin-top: 1rem;
+}
+
+.join-button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.join-button-div {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.d-none {
+    display: none;
+}
+
+/* Responsive Styles */
+  @media (max-width: 768px) {
+    .events-container {
+      padding: 1.5rem;
+    }
+    
+    .events-header h1 {
+      font-size: 2rem;
+    }
+    
+    .events-tabs {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .tab-button {
+      width: 100%;
+      max-width: 300px;
+    }
+    
+    .events-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .event-details-content {
+        flex-direction: column;
+    }
+
+    .event-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .related-events-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .registration-container {
+        width: 100%;
+        height: auto;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .events-container {
+      padding: 1rem;
+    }
+    
+    .events-header h1 {
+      font-size: 1.8rem;
+    }
+    
+    .tab-button {
+      padding: 0.6rem 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .event-details-container {
+        padding: 1rem;
+    }
+
+    .event-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .event-card-image {
+        height: 180px;
+    }
+    
+    .event-card-content {
+        padding: 1.2rem;
+    }
+    
+    .event-card-content h3 {
+        font-size: 1.2rem;
+    }
+    
+    .event-description {
+        font-size: 0.9rem;
+    }
+    
+    .view-details-btn {
+        width: 100%;
+        text-align: center;
+    }
+  }

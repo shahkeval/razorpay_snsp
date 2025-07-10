@@ -1,0 +1,22 @@
+.video-container {
+    display: flex;
+    justify-content: center; /* Center the video */
+    margin: 20px 0; /* Add some margin */
+}
+
+.video-container iframe {
+    max-width:90%; /* Make the video responsive */
+    height: 500px; /* Maintain aspect ratio */
+}
+
+.unique-text {
+    color: #700b0b; /* Unique text color */
+    font-weight: bold; /* Make the unique text bold */
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .unique-text {
+        font-size: 1.2em; /* Increase font size on smaller screens */
+    }
+}

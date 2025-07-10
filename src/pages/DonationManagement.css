@@ -1,0 +1,94 @@
+/* DonationManagement.css */
+
+.donation-management-main {
+  min-height: 80vh;
+  background: #fffbe6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.donation-management-content {
+  width: 100%;
+  max-width: 1200px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  padding: 32px;
+  overflow-x: auto;
+}
+
+.donation-table .MuiTable-root {
+  background: #fffbe6;
+}
+
+.donation-table .MuiTableHead-root {
+  background: #f5e1a4;
+}
+
+.donation-table .MuiTableCell-head {
+  color: #6d4c00;
+  font-weight: bold;
+}
+
+.donation-table .MuiTableCell-body {
+  color: #4e3c0a;
+}
+
+.donation-dialog .MuiDialogTitle-root {
+  background: #f5e1a4;
+  color: #6d4c00;
+  font-weight: bold;
+}
+
+.donation-dialog .MuiDialogActions-root {
+  background: #f5e1a4;
+}
+
+.donation-dialog .MuiButton-contained {
+  background: #b8860b;
+  color: #fff;
+}
+
+.donation-dialog .MuiButton-contained:hover {
+  background: #a0760b;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .donation-management-content {
+    padding: 16px;
+    max-width: 98vw;
+  }
+  .donation-management-main {
+    padding: 24px 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .donation-management-content {
+    padding: 4px;
+    max-width: 100vw;
+    border-radius: 0;
+  }
+  .donation-management-main {
+    padding: 8px 0;
+  }
+  .MuiTable-root {
+    font-size: 0.85rem;
+  }
+  .MuiTableCell-head, .MuiTableCell-body {
+    padding: 6px 4px;
+  }
+  .MuiButton-root {
+    min-width: 32px;
+    font-size: 0.9rem;
+  }
+  .MuiDialog-paper {
+    margin: 8px;
+    width: 98vw !important;
+    max-width: 98vw !important;
+  }
+} 

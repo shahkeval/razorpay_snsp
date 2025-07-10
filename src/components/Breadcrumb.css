@@ -1,0 +1,28 @@
+.breadcrumb {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  align-items: center; /* Align items vertically */
+}
+
+.breadcrumb li {
+  margin-right: 10px;
+}
+
+.breadcrumb li a {
+  text-decoration: none;
+  color: #700b0b; /* Accent color */
+}
+
+.breadcrumb li::after {
+  content: '>';
+  margin-left: 10px;
+}
+
+.breadcrumb li:last-child::after {
+  content: '';
+}
+
+.breadcrumb li a:hover {
+  text-decoration: underline; /* Optional: Add hover effect */
+}

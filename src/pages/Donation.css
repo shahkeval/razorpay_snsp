@@ -1,0 +1,97 @@
+/* Donation.css */
+
+.donation-container {
+    background-color: #f7f5f2;
+    padding: 2rem;
+    max-width: 600px;
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+  }
+  
+  .heading {
+    color: #700b0b;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .donation-form {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .donation-form input,
+  .donation-form select,
+  .donation-form textarea {
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .donation-form button {
+    background-color: #700b0b;
+    color: #fff;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .donation-form button:hover {
+    background-color: #a01010;
+  }
+  
+  .qr-section {
+    text-align: center;
+    margin-top: 2rem;
+  }
+  
+  .error-message {
+    color: red;
+    text-align: center;
+  }
+  
+  .back-button, .gpay-button {
+    background-color: #8B0000; /* Dark red background */
+    color: white; /* White text */
+    border: none; /* No border */
+    padding: 10px 15px; /* Padding for the button */
+    margin: 10px; /* Margin between buttons */
+    cursor: pointer; /* Pointer cursor on hover */
+    border-radius: 5px; /* Rounded corners */
+    font-size: 16px; /* Font size */
+    display: inline-flex; /* Align items in a row */
+    align-items: center; /* Center items vertically */
+  }
+  
+  .gpay-button img {
+    margin-right: 5px; /* Space between logo and text */
+  }
+  
+  .back-button:hover, .gpay-button:hover {
+    background-color: #A52A2A; /* Lighter red on hover */
+  }
+  
+  @media (max-width: 600px) {
+    .donation-container {
+      padding: 1rem;
+      height: 64vh;
+    }
+  
+    .donation-form input,
+    .donation-form select,
+    .donation-form textarea,
+    .donation-form button,
+    .back-button {
+      font-size: 0.9rem;
+    }
+  }
+  

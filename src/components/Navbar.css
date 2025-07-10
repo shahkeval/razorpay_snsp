@@ -1,0 +1,131 @@
+/* Global Navbar Styles */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fbeec1;
+  padding: 1rem 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+/* Add padding to the body to prevent content from being hidden behind the navbar */
+body {
+  padding-top: 80px;
+}
+
+/* Logo container */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar-logo-img {
+  width: 50px;
+  height: 50px;
+}
+
+.navbar-logo-text {
+  font-size: 1.5rem;
+  color: #8c4a00;
+  font-weight: bold;
+  padding-bottom: 5px;
+}
+
+.navbar-links {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.navbar-links li {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 2.2rem;
+  background-color: #fffef5;
+  padding: 0.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.dropdown li {
+  margin: 0.5rem 0;
+}
+
+/* Burger Menu Styles */
+.burger {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  gap: 5px;
+}
+
+.burger div {
+  width: 25px;
+  height: 3px;
+  background-color: #8c4a00;
+}
+
+@media (max-width: 767.98px) {
+  .burger {
+    display: flex;
+  }
+
+  .navbar-links {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #fbeec1;
+    width: 100%;
+    padding: 1rem 2rem;
+  }
+
+  .navbar-links.open {
+    display: flex;
+  }
+
+  .navbar-logo-text {
+    font-size: 1.2rem;
+  }
+
+  .navbar-logo-img {
+    width: 40px;
+    height: 40px;
+  }
+  .navbar{
+    padding: 1rem 1rem;
+  }
+}
+
+/* Image section responsiveness */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .image-section {
+    width: 100%;
+    height: auto;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .image-section {
+    width: 100%;
+    height: auto;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .image-section {
+    width: 100%;
+    height: auto;
+  }
+}

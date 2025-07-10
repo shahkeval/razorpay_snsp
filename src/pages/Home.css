@@ -1,0 +1,140 @@
+.home-container {
+    display: flex;
+    flex-direction: column; /* Default to column for mobile */
+    padding: 2rem;
+    gap: 2rem;
+}
+
+.image-section {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Hide overflow if needed */
+    height: 600px;
+    width: 600px;
+}
+
+.image-section img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    transition: opacity 0.5s ease; /* Optional: add a fade effect */
+}
+
+.text-section {
+    flex: 1;
+    background-color: #fff7ec;
+    border-radius: 12px;
+    
+    text-align: center;
+}
+
+.text-section h1 {
+    color: #700b0b;
+    font-size: 40px;
+}
+
+.text-section h3 {
+    color: #c95500;
+    font-size: 27px;
+}
+
+.text-section p {
+    font-size: 23px;
+}
+
+.quick-links {
+    background-color: #f0e4d7;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.quick-links h2 {
+    color: #700b0b;
+}
+
+.quick-links ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.quick-links li {
+    margin: 0.5rem 0;
+}
+
+/* Media Queries for Responsive Design */
+@media (min-width: 932px) {
+    .home-container {
+        flex-direction: row; /* Change to row for tablet and larger */
+    }
+
+    .image-section,
+    .text-section,
+    .quick-links {
+        flex: 1; /* Allow sections to take equal space */
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .image-section{
+        width: 100%;
+        height: auto;
+       }
+}
+ 
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .image-section{
+        width: 100%;
+        height: auto;
+       }
+}
+ 
+
+@media (max-width: 575.98px) {
+ .image-section{
+  width: 100%;
+  height: auto;
+ }
+}
+
+.upcoming-events {
+    /* background-color: #f0e4d7;
+    border-radius: 12px; */
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-top: 2rem;
+}
+
+.upcoming-events h2 {
+    color: #700b0b;
+}
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.event-card {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.event-card:hover {
+    transform: scale(1.05);
+}
+
+.event-card-image img {
+    width: 100%;
+    height: auto;
+}
+
+.event-card-content {
+    padding: 1rem;
+}
+

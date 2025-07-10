@@ -1,0 +1,249 @@
+.video-container {
+    display: flex;
+    justify-content: center; /* Center the video */
+    margin: 20px 0; /* Add some margin */
+}
+
+.video-container iframe {
+    max-width:90%; /* Make the video responsive */
+    height: 500px; /* Maintain aspect ratio */
+}
+
+.unique-text {
+    color: #700b0b; /* Unique text color */
+    font-weight: bold; /* Make the unique text bold */
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .unique-text {
+        font-size: 1.2em; /* Increase font size on smaller screens */
+    }
+}
+
+.events-section {
+    margin-top: 2rem;
+}
+
+.events-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.tab-button {
+    background-color: white;
+    color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+    border-radius: 30px;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 180px;
+}
+
+.tab-button:hover {
+    background-color: rgba(112, 11, 11, 0.1);
+}
+
+.tab-button.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.event-card {
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.event-card-image {
+    position: relative;
+    overflow: hidden;
+    height: 200px;
+}
+
+.event-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.event-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.event-card-content {
+    padding: 1.5rem;
+}
+
+.event-card-content h3 {
+    color: var(--accent-color);
+    margin: 0 0 0.5rem;
+}
+
+.view-details-btn {
+    align-self: flex-start;
+    background-color: transparent;
+    color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+    border-radius: 25px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.view-details-btn:hover {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.event-message {
+    margin: 20px 0;
+}
+
+.view-events-button {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.view-events-button:hover {
+    background-color: #45a049; /* Darker green */
+}
+
+.rssm-social-links {
+    position: fixed; /* Keep it fixed on the right side */
+    right: 0px; /* Adjust as needed for spacing from the right */
+    top: 300px; /* Adjust as needed for vertical positioning */
+    background-color: white; /* Background color for visibility */
+    padding: 10px; /* Padding around the links */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    z-index: 1000; /* Ensure it appears above other content */
+}
+
+.rssm-social-links h3 {
+    margin: 0 0 10px; /* Margin for the heading */
+    text-align: center; /* Center the heading */
+}
+
+.rssm-social-icons {
+    display: flex; /* Use flexbox for alignment */
+    flex-direction: column; /* Arrange items vertically */
+    align-items: center; /* Center the icons horizontally */
+    gap: 10px; /* Space between icons */
+}
+
+.rssm-social-icons a {
+    color: var(--accent-color); /* Use accent color for icons */
+    font-size: 24px; /* Adjust icon size */
+    transition: color 0.3s; /* Smooth color transition */
+}
+
+.rssm-social-icons a:hover {
+    color: #700b0b; /* Change color on hover */
+}
+
+.footer {
+    position: relative; /* Ensure it has a positioning context */
+    z-index: 1; /* Lower z-index than social links */
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .rssm-social-links {
+        right: 10px; /* Adjust for smaller screens */
+        top: 80px; /* Adjust for smaller screens */
+        padding: 5px; /* Less padding for smaller screens */
+    }
+
+
+
+    .video-container iframe {
+        height: 300px; /* Reduce height for mobile */
+    }
+
+    h1 {
+        font-size: 1.5em; /* Adjust heading size for mobile */
+    }
+
+    .event-message {
+        margin: 10px 0; /* Adjust margin for mobile */
+    }
+
+    .rssm-social-icons {
+        gap: 5px; /* Reduce gap between icons */
+    }
+
+    .rssm-social-icons a {
+        font-size: 20px; /* Adjust icon size for mobile */
+    }
+    .rssm-social-links {
+        position: fixed; /* Keep it fixed on the right side */
+        right: 0px; /* Adjust as needed for spacing from the right */
+        top: 300px; /* Adjust as needed for vertical positioning */
+        background-color: white; /* Background color for visibility */
+        padding: 10px; /* Padding around the links */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        z-index: 1000; /* Ensure it appears above other content */
+    }
+}
+
+/* Additional styles for very small screens */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.2em; /* Further reduce heading size */
+    }
+
+    .video-container iframe {
+        height: 200px; /* Further reduce height for very small screens */
+    }
+
+    .rssm-social-links {
+        right: 5px; /* Adjust for very small screens */
+        top: 60px; /* Adjust for very small screens */
+    }
+    .rssm-social-links {
+        position: fixed; /* Keep it fixed on the right side */
+        right: 0px; /* Adjust as needed for spacing from the right */
+        top: 300px; /* Adjust as needed for vertical positioning */
+        background-color: white; /* Background color for visibility */
+        padding: 10px; /* Padding around the links */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        z-index: 1000; /* Ensure it appears above other content */
+    }
+}

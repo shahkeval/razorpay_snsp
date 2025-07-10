@@ -1,0 +1,60 @@
+.about-section {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.text-section {
+  margin-bottom: 1rem;
+  text-align: center;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+
+.image-carousel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 500px; /* Adjust height as needed */
+  overflow: hidden; /* Hide overflow */
+  width: 100%;
+  max-width: 500px;
+}
+
+.image-carousel img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  transition: opacity 0.5s ease; /* Optional: add a fade effect */
+}
+
+h2 {
+  color: #700b0b; /* Change to your preferred color */
+}
+
+h1{
+  color: #700b0b;
+  font-size: 45px;
+}
+
+p {
+  font-size: 18px; /* Adjust font size as needed */
+  line-height: 1.6;
+  /* text-align: center; Improve readability */
+}
+
+/* Summary Section */
+.summary-section {
+  text-align: center;
+  /* margin-top: 2rem; */
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+  .about-section {
+    flex-direction: column;
+    align-items: center;
+  }
+}

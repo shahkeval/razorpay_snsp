@@ -1,0 +1,99 @@
+.rssmu-registration-management-main {
+  min-height: 80vh;
+  background: #fffbe6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.rssmu-registration-management-content {
+  width: 100%;
+  max-width: 1200px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  padding: 32px;
+  overflow-x: auto;
+}
+
+.registration-table .MuiTable-root {
+  background: #fffbe6;
+}
+
+.registration-table .MuiTableHead-root {
+  background: #f5e1a4;
+}
+
+.registration-table .MuiTableCell-head {
+  color: #6d4c00;
+  font-weight: bold;
+}
+
+.registration-table .MuiTableCell-body {
+  color: #4e3c0a;
+}
+
+.registration-dialog .MuiDialogTitle-root {
+  background: #f5e1a4;
+  color: #6d4c00;
+  font-weight: bold;
+}
+
+.registration-dialog .MuiDialogActions-root {
+  background: #f5e1a4;
+}
+
+.registration-dialog .MuiButton-contained {
+  background: #b8860b;
+  color: #fff;
+}
+
+.registration-dialog .MuiButton-contained:hover {
+  background: #a0760b;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .rssmu-registration-management-content {
+    padding: 16px;
+    max-width: 98vw;
+  }
+  .rssmu-registration-management-main {
+    padding: 24px 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .rssmu-registration-management-content {
+    padding: 4px;
+    max-width: 100vw;
+    border-radius: 0;
+  }
+  .rssmu-registration-management-main {
+    padding: 8px 0;
+  }
+  .MuiTable-root {
+    font-size: 0.85rem;
+  }
+  .MuiTableCell-head, .MuiTableCell-body {
+    padding: 6px 4px;
+  }
+  .MuiButton-root {
+    min-width: 32px;
+    font-size: 0.9rem;
+  }
+  .MuiDialog-paper {
+    margin: 8px;
+    width: 98vw !important;
+    max-width: 98vw !important;
+  }
+}
+
+.excel-download-button {
+  margin: 16px 0;
+  background: #964b00;
+  color: #fff;
+}
+

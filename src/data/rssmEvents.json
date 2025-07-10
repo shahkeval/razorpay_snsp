@@ -1,0 +1,48 @@
+[
+  {
+    "id": "rssm-giriseva-2025",
+    "title": "RSSM Giri Seva - 2025",
+    "description": "Join us for a special Giri Seva event organized by Rushabh Samrajya Sanskar Mission. \\n This spiritual service activity brings devotees together to clean temples and idols on Shatrunjaya Hill. \\n It's not just physical service, but a path to spiritual purification. \\n Let's participate in this yatra with devotion and service.",
+    "image": "/images/palitana.png",
+    "images": [
+      "/images/group1.jpg",
+      "/images/group2.jpg",
+      "/images/group3.jpg"
+    ],
+    "date": "2025-07-15,16,17",
+    "time": "9:00 AM - 5:00 PM",
+    "location": "Palitana",
+    "organizer": "Rushabh Samrajya Sanskar Mission",
+    "type": "upcoming"
+  },
+  {
+    "id": "rssm-meditation-2025",
+    "title": "RSSM Meditation Workshop",
+    "description": "Experience deep spiritual connection through our guided meditation workshop. \\n Learn ancient meditation techniques and spiritual practices. \\n Connect with like-minded individuals on the path of spiritual growth. \\n Perfect for both beginners and experienced practitioners.",
+    "image": "/images/meditation.jpg",
+    "images": [
+      "/images/meditation1.jpg",
+      "/images/meditation2.jpg"
+    ],
+    "date": "2025-08-20",
+    "time": "6:00 AM - 8:00 AM",
+    "location": "RSSM Center, Ahmedabad",
+    "organizer": "Rushabh Samrajya Sanskar Mission",
+    "type": "upcoming"
+  },
+  {
+    "id": "rssm-youth-camp-2024",
+    "title": "RSSM Youth Spiritual Camp",
+    "description": "A transformative 3-day camp for young spiritual seekers. \\n Activities include meditation, spiritual discussions, and community service. \\n Build lasting friendships with fellow spiritual aspirants. \\n Learn practical ways to integrate spirituality into daily life.",
+    "image": "/images/youth-camp.jpg",
+    "images": [
+      "/images/camp1.jpg",
+      "/images/camp2.jpg"
+    ],
+    "date": "2024-12-25,26,27",
+    "time": "Full Day Program",
+    "location": "RSSM Retreat Center",
+    "organizer": "Rushabh Samrajya Sanskar Mission",
+    "type": "past"
+  }
+] 
