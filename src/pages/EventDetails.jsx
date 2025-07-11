@@ -217,7 +217,7 @@ const EventDetails = () => {
       let pollCount = 0;
       const poll = setInterval(async () => {
         try {
-          const res = await axios.get(`https://razorpay-snsp-pfb6.vercel.app//api/yatriks/verify-payment?orderId=${paymentLinkId}`);
+          const res = await axios.get(`https://razorpay-snsp-pfb6.vercel.app/api/yatriks/verify-payment?orderId=${paymentLinkId}`);
           if (res.data.status === 'paid') {
             setPaymentStatus('paid');
             setPaymentThankYou(true);
@@ -284,7 +284,7 @@ const EventDetails = () => {
       let pollCount = 0;
       const poll = setInterval(async () => {
         try {
-          const res = await axios.get(`https://razorpay-snsp-pfb6.vercel.app//api/yatriks/verify-payment?yatrikNo=${yatrikNo}&orderId=${orderId}`);
+          const res = await axios.get(`https://razorpay-snsp-pfb6.vercel.app/api/yatriks/verify-payment?yatrikNo=${yatrikNo}&orderId=${orderId}`);
           if (res.data.status === 'paid') {
             setPaymentStatus('paid');
             setPaymentThankYou(true);
@@ -515,7 +515,7 @@ const EventDetails = () => {
           );
 
           await axios.post(
-            "https://razorpay-snsp-pfb6.vercel.app//api/yatriks/createyatrik",
+            "https://razorpay-snsp-pfb6.vercel.app/api/yatriks/createyatrik",
             formData,
             {
               headers: { "Content-Type": "multipart/form-data" },
@@ -633,7 +633,7 @@ const EventDetails = () => {
       formData.append("familyConfirmation", vaiyavachForm.familyConfirmation);
       formData.append("transactionNumber", vaiyavachTransactionNumber);
       await axios.post(
-        "https://razorpay-snsp-pfb6.vercel.app//api/vaiyavach/createvaiyavachi",
+        "https://razorpay-snsp-pfb6.vercel.app/api/vaiyavach/createvaiyavachi",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -691,7 +691,7 @@ const EventDetails = () => {
       formData.append('yatrikConfirmation', yatraRegistrationData.yatrikConfirmation);
       formData.append('familyConfirmation', yatraRegistrationData.familyConfirmation);
       // Send to backend to create payment link
-      const res = await axios.post('https://razorpay-snsp-pfb6.vercel.app//api/yatriks/create-payment-link', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const res = await axios.post('https://razorpay-snsp-pfb6.vercel.app/api/yatriks/create-payment-link', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       const { paymentLink, yatrikNo, orderId } = res.data;
       // Store yatrikNo/orderId in session for callback polling
       sessionStorage.setItem('yatrikNo', yatrikNo);
