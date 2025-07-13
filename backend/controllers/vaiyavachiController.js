@@ -1,6 +1,10 @@
 const path = require('path');
 const multer = require('multer');
 const Vaiyavachi = require('../models/7jatravaiyavachi-25');
+const fs = require('fs');
+const Razorpay = require('razorpay');
+const Payment = require('../models/Payment');
+const crypto = require('crypto');
 
 // Multer storage config for vaiyavachi image
 const storage = multer.diskStorage({
@@ -15,24 +19,217 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Create a new Vaiyavachi record with image upload
-exports.createVaiyavachi = [
-    upload.single('vaiyavachiImage'),
-    async (req, res) => {
-        try {
-            const vaiyavachiImagePath = req.file ? `/7-jatra-vaiyavach/${req.file.filename}` : '';
-            const body = req.body;
-            const vaiyavachi = new Vaiyavachi({
-                ...body,
-                vaiyavachiImage: vaiyavachiImagePath
-            });
-            await vaiyavachi.save();
-            res.status(201).json(vaiyavachi);
-        } catch (error) {
-            res.status(400).json({ message: error.message });
+// Create a new Vaiyavachi record with image upload or base64
+exports.createVaiyavachi = async (req, res) => {
+    try {
+        let vaiyavachiImagePath = '';
+        let body = req.body;
+        // If base64 image is sent
+        if (body.vaiyavachiImage && typeof body.vaiyavachiImage === 'string' && body.vaiyavachiImage.startsWith('data:image')) {
+            // Parse base64
+            const matches = body.vaiyavachiImage.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
+            if (!matches) throw new Error('Invalid image data');
+            const ext = matches[1].split('/')[1];
+            const buffer = Buffer.from(matches[2], 'base64');
+            const filename = `VAIYAVACHI-${Date.now()}.${ext}`;
+            const savePath = path.join(__dirname, '../../public/7-jatra-vaiyavach', filename);
+            fs.writeFileSync(savePath, buffer);
+            vaiyavachiImagePath = `/7-jatra-vaiyavach/${filename}`;
+            // Remove base64 from body so it doesn't get stored in DB
+            body = { ...body, vaiyavachiImage: undefined };
+        } else if (req.file) {
+            // Fallback to multer file upload
+            vaiyavachiImagePath = `/7-jatra-vaiyavach/${req.file.filename}`;
         }
+        const vaiyavachi = new Vaiyavachi({
+            ...body,
+            vaiyavachiImage: vaiyavachiImagePath
+        });
+        await vaiyavachi.save();
+        res.status(201).json(vaiyavachi);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
-];
+};
+
+// Create Razorpay Payment Link and store Vaiyavachi + Payment
+exports.createPaymentLink = async (req, res) => {
+  try {
+    // Extract registration fields
+    const {
+      name, mobileNumber, whatsappNumber, emailAddress, education, religiousEducation, weight, height, dob, address, city, state,
+      familyMemberName, relation, familyMemberWANumber, emergencyNumber, is7YatraDoneEarlier, haveYouDoneVaiyavachEarlier, howToReachPalitana, howManyDaysJoin, typeOfVaiyavach, valueOfVaiyavach, vaiyavachiConfirmation, familyConfirmation
+    } = req.body;
+    // Save Vaiyavachi registration (isPaid: 'unpaid')
+    // Assume vaiyavachiImage is already handled (base64 or file path)
+    const vaiyavachiImage = req.body.vaiyavachiImage || '';
+    const newVaiyavachi = new Vaiyavachi({
+      name,
+      mobileNumber,
+      whatsappNumber,
+      emailAddress,
+      education,
+      religiousEducation,
+      weight,
+      height,
+      dob,
+      address,
+      city,
+      state,
+      familyMemberName,
+      relation,
+      familyMemberWANumber,
+      emergencyNumber,
+      is7YatraDoneEarlier,
+      haveYouDoneVaiyavachEarlier,
+      howToReachPalitana,
+      howManyDaysJoin,
+      typeOfVaiyavach,
+      valueOfVaiyavach,
+      vaiyavachiConfirmation,
+      familyConfirmation,
+      vaiyavachiImage,
+      isPaid: 'unpaid',
+    });
+    await newVaiyavachi.save();
+    // Create Razorpay Payment Link
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+    const paymentLink = await razorpay.paymentLink.create({
+      amount: 50000, // Rs. 500.00 in paise
+      currency: 'INR',
+      accept_partial: false,
+      description: '7 Yatra 2025 Registration',
+      customer: {
+        name,
+        email: emailAddress,
+        contact: mobileNumber,
+      },
+      notify: {
+        sms: true,
+        email: true,
+      },
+      callback_url: process.env.PAYMENT_CALLBACK_URL, // e.g. https://yourdomain.com/payment-redirect
+      callback_method: 'get',
+      reference_id: newVaiyavachi._id.toString(),
+    });
+    // Store Payment link in Vaiyavachi
+    newVaiyavachi.paymentLink = paymentLink.short_url;
+    newVaiyavachi.orderId = paymentLink.id;
+    await newVaiyavachi.save();
+    // Store Payment record
+    const payment = new Payment({
+      vaiyavachiNo: newVaiyavachi.vaiyavachiNo,
+      orderId: paymentLink.id,
+      paymentId: paymentLink.payment_id || '',
+      signature: '',
+      amount: 500,
+      currency: 'INR',
+      status: 'created',
+      link: paymentLink.short_url,
+    });
+    await payment.save();
+    // Return payment link to frontend
+    res.json({ paymentLink: paymentLink.short_url, vaiyavachiNo: newVaiyavachi.vaiyavachiNo, orderId: paymentLink.id });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+// Razorpay Webhook for payment status (Vaiyavach)
+exports.razorpayWebhook = async (req, res) => {
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    const signature = req.headers['x-razorpay-signature'];
+    const body = JSON.stringify(req.body);
+    const expectedSignature = crypto.createHmac('sha256', secret).update(body).digest('hex');
+    if (signature !== expectedSignature) {
+      return res.status(400).json({ message: 'Invalid webhook signature' });
+    }
+    const event = req.body.event;
+    if (event === 'payment_link.paid') {
+      const paymentLinkId = req.body.payload.payment_link.entity.id;
+      const paymentId = req.body.payload.payment.entity.id;
+      const paymentSignature = signature;
+      // Update Payment and Vaiyavachi
+      const payment = await Payment.findOneAndUpdate(
+        { orderId: paymentLinkId },
+        { status: 'paid', paymentId, signature: paymentSignature, paymentCompletedAt: new Date() },
+        { new: true }
+      );
+      if (payment) {
+        await Vaiyavachi.findOneAndUpdate(
+          { vaiyavachiNo: payment.vaiyavachiNo },
+          { isPaid: 'paid' }
+        );
+      }
+    }
+    res.json({ status: 'ok' });
+  };
+  
+  // Verify payment status (frontend polling after redirect) for Vaiyavach
+  exports.verifyPayment = async (req, res) => {
+    try {
+      const { vaiyavachiNo, orderId } = req.query;
+      let payment;
+      if (orderId) {
+        payment = await Payment.findOne({ orderId });
+      } else if (vaiyavachiNo) {
+        payment = await Payment.findOne({ vaiyavachiNo });
+      }
+      if (!payment) return res.status(404).json({ status: 'not_found' });
+      if (payment.status === 'paid') {
+        // Only update isPaid field in Vaiyavachi collection
+        if (payment.vaiyavachiNo) {
+          await Vaiyavachi.updateOne(
+            { vaiyavachiNo: payment.vaiyavachiNo },
+            { isPaid: 'paid' }
+          );
+        }
+        return res.json({ status: 'paid' });
+      }
+      // If not paid, check Razorpay directly
+      let razorpayRes;
+      try {
+        const razorpay = new Razorpay({
+          key_id: process.env.RAZORPAY_KEY_ID,
+          key_secret: process.env.RAZORPAY_KEY_SECRET,
+        });
+        razorpayRes = await razorpay.paymentLink.fetch(orderId);
+      } catch (err) {
+        return res.status(500).json({ status: 'error', message: 'Razorpay fetch failed' });
+      }
+      if (razorpayRes.status === 'paid') {
+        // Update existing Payment record with all details
+        payment.status = 'paid';
+        payment.amount = '500';
+        payment.method = razorpayRes.payment ? razorpayRes.payment.method : payment.method;
+        payment.razorpayDetails = razorpayRes;
+        payment.paidAt = razorpayRes.paid_at ? new Date(razorpayRes.paid_at * 1000) : new Date();
+        // Save paymentId and signature if available
+        payment.paymentId = razorpayRes.razorpay_payment_id || (razorpayRes.payment ? razorpayRes.payment.id : payment.paymentId);
+        payment.signature = razorpayRes.razorpay_signature || payment.signature;
+        // Save paymentCompletedAt
+        payment.paymentCompletedAt = razorpayRes.paid_at ? new Date(razorpayRes.paid_at * 1000) : new Date();
+        await payment.save();
+        // Only update isPaid field in Vaiyavachi collection
+        if (payment.vaiyavachiNo) {
+          await Vaiyavachi.updateOne(
+            { vaiyavachiNo: payment.vaiyavachiNo },
+            { isPaid: 'paid' }
+          );
+        }
+        return res.json({ status: 'paid' });
+      }
+      // Not paid yet, return current status
+      return res.json({ status: razorpayRes.status });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }; 
 
 // Get all Vaiyavachi records with pagination, search, sorting, and filtering
 exports.getAllVaiyavachis = async (req, res) => {
@@ -137,4 +334,30 @@ exports.getVaiyavachiSummary = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}; 
+};
+
+// Endpoint: Get counts of registrations for each valueOfVaiyavach grouped by typeOfVaiyavach
+exports.getVaiyavachTypeCounts = async (req, res) => {
+    try {
+        const pipeline = [
+            {
+                $group: {
+                    _id: { typeOfVaiyavach: "$typeOfVaiyavach", valueOfVaiyavach: "$valueOfVaiyavach" },
+                    count: { $sum: 1 }
+                }
+            }
+        ];
+        const results = await Vaiyavachi.aggregate(pipeline);
+        // Format: { spot: { value1: count, ... }, roamming: { value1: count, ... }, chaityavandan: { value1: count, ... } }
+        const response = {};
+        results.forEach(r => {
+            const type = r._id.typeOfVaiyavach;
+            const value = r._id.valueOfVaiyavach;
+            if (!response[type]) response[type] = {};
+            response[type][value] = r.count;
+        });
+        res.json(response);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

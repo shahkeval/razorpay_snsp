@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
-  yatrikNo: { type: String, required: true, index: true },
+  yatrikNo: { type: String, index: true }, // was required, now optional
+  vaiyavachiNo: { type: String, index: true }, // new, optional
   paymentLinkId: { type: String }, // Razorpay payment link ID (plink_...)
   orderId: { type: String },       // Razorpay order ID (order_...)
   paymentId: { type: String },

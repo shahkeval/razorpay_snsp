@@ -36,12 +36,13 @@ const AdminDashboard = () => {
   const [loadingYatra, setLoadingYatra] = useState(true);
   const navigate = useNavigate();
   const username = localStorage.getItem('username') || 'Admin';
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
     const fetchDonationSummary = async () => {
       setLoadingDonations(true);
       try {
-        const res = await axios.get('https://namonamahshaswatparivar-dt17.vercel.app/api/donations/summary');
+        const res = await axios.get(`${API_BASE_URL}/api/donations/summary`);
         setDonationSummary(res.data);
       } catch {
         setDonationSummary({ totalAmount: 0, byCategory: [] });
@@ -52,7 +53,7 @@ const AdminDashboard = () => {
     const fetchRegistrationSummary = async () => {
       setLoadingRegistrations(true);
       try {
-        const res = await axios.get('https://namonamahshaswatparivar-dt17.vercel.app/api/rssmsu/rsummary');
+        const res = await axios.get(`${API_BASE_URL}/api/rssmsu/rsummary`);
         setRegistrationSummary(res.data);
       } catch (error) {
         setRegistrationSummary({ totalCount: 0, byCategory: [] });
@@ -63,7 +64,7 @@ const AdminDashboard = () => {
     const fetchYatraSummary = async () => {
       setLoadingYatra(true);
       try {
-        const res = await axios.get('http://localhost:5000/api/yatriks/summary');
+        const res = await axios.get(`${API_BASE_URL}/api/yatriks/summary`);
         setYatraSummary(res.data);
       } catch (error) {
         setYatraSummary({ totalRecords: 0, oldCategoryCount: 0, newCategoryCount: 0 });

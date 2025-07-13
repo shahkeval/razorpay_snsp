@@ -34,8 +34,18 @@ const yatrikSchema = new mongoose.Schema({
 // Pre-save hook to auto-generate yatrikNo
 yatrikSchema.pre('save', async function(next) {
     if (!this.isNew) return next();
-    const highestYatrik = await this.constructor.findOne().sort({ yatrikNo: -1 });
-    const highestNumber = highestYatrik ? parseInt(highestYatrik.yatrikNo.split('-')[1]) : 0;
+    // Find the highest yatrikNo using regex and sort by createdAt
+    const last = await this.constructor
+        .findOne({ yatrikNo: { $regex: /^yatrik-\d{4}$/ } })
+        .sort({ createdAt: -1 });
+
+    let highestNumber = 0;
+    if (last && last.yatrikNo) {
+        const match = last.yatrikNo.match(/yatrik-(\d{4})/);
+        if (match) {
+            highestNumber = parseInt(match[1], 10);
+        }
+    }
     this.yatrikNo = `yatrik-${String(highestNumber + 1).padStart(4, '0')}`;
     next();
 });

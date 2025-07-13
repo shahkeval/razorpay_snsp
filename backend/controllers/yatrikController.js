@@ -157,10 +157,50 @@ exports.verifyPayment = async (req, res) => {
     }
     if (!payment) return res.status(404).json({ status: 'not_found' });
     if (payment.status === 'paid') {
+      // Only update isPaid field in Yatrik collection
+      if (payment.yatrikNo) {
+        await Yatrik.updateOne(
+          { yatrikNo: payment.yatrikNo },
+          { isPaid: 'paid' }
+        );
+      }
       return res.json({ status: 'paid' });
-    } else {
-      return res.json({ status: payment.status });
     }
+    // If not paid, check Razorpay directly
+    let razorpayRes;
+    try {
+      const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+      });
+      razorpayRes = await razorpay.paymentLink.fetch(orderId);
+    } catch (err) {
+      return res.status(500).json({ status: 'error', message: 'Razorpay fetch failed' });
+    }
+    if (razorpayRes.status === 'paid') {
+      // Update existing Payment record with all details
+      payment.status = 'paid';
+      payment.amount = '500';
+      payment.method = razorpayRes.payment ? razorpayRes.payment.method : payment.method;
+      payment.razorpayDetails = razorpayRes;
+      payment.paidAt = razorpayRes.paid_at ? new Date(razorpayRes.paid_at * 1000) : new Date();
+      // Save paymentId and signature if available
+      payment.paymentId = razorpayRes.razorpay_payment_id || (razorpayRes.payment ? razorpayRes.payment.id : payment.paymentId);
+      payment.signature = razorpayRes.razorpay_signature || payment.signature;
+      // Save paymentCompletedAt
+      payment.paymentCompletedAt = razorpayRes.paid_at ? new Date(razorpayRes.paid_at * 1000) : new Date();
+      await payment.save();
+      // Only update isPaid field in Yatrik collection
+      if (payment.yatrikNo) {
+        await Yatrik.updateOne(
+          { yatrikNo: payment.yatrikNo },
+          { isPaid: 'paid' }
+        );
+      }
+      return res.json({ status: 'paid' });
+    }
+    // Not paid yet, return current status
+    return res.json({ status: razorpayRes.status });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
