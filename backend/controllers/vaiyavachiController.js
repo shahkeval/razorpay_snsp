@@ -53,122 +53,136 @@ exports.createVaiyavachi = async (req, res) => {
 };
 
 // Create Razorpay Payment Link and store Vaiyavachi + Payment
-exports.createPaymentLink = async (req, res) => {
-  try {
-    // Extract registration fields
-    const {
-      name, mobileNumber, whatsappNumber, emailAddress, education, religiousEducation, weight, height, dob, address, city, state,
-      familyMemberName, relation, familyMemberWANumber, emergencyNumber, is7YatraDoneEarlier, haveYouDoneVaiyavachEarlier, howToReachPalitana, howManyDaysJoin, typeOfVaiyavach, valueOfVaiyavach, vaiyavachiConfirmation, familyConfirmation
-    } = req.body;
-    // Save Vaiyavachi registration (isPaid: 'unpaid')
-    // Assume vaiyavachiImage is already handled (base64 or file path)
-    const vaiyavachiImage = req.body.vaiyavachiImage || '';
-    const newVaiyavachi = new Vaiyavachi({
-      name,
-      mobileNumber,
-      whatsappNumber,
-      emailAddress,
-      education,
-      religiousEducation,
-      weight,
-      height,
-      dob,
-      address,
-      city,
-      state,
-      familyMemberName,
-      relation,
-      familyMemberWANumber,
-      emergencyNumber,
-      is7YatraDoneEarlier,
-      haveYouDoneVaiyavachEarlier,
-      howToReachPalitana,
-      howManyDaysJoin,
-      typeOfVaiyavach,
-      valueOfVaiyavach,
-      vaiyavachiConfirmation,
-      familyConfirmation,
-      vaiyavachiImage,
-      isPaid: 'unpaid',
-    });
-    await newVaiyavachi.save();
-    // Create Razorpay Payment Link
-    const razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
-    const paymentLink = await razorpay.paymentLink.create({
-      amount: 50000, // Rs. 500.00 in paise
-      currency: 'INR',
-      accept_partial: false,
-      description: '7 Yatra 2025 Registration',
-      customer: {
+exports.createPaymentLink = [
+  upload.single('vaiyavachiPhoto'),
+  async (req, res) => {
+    try {
+      console.log('--- [createPaymentLink] Request received ---');
+      // Extract registration fields
+      const {
+        name, mobileNumber, whatsappNumber, emailAddress, education, religiousEducation, weight, height, dob, address, city, state,
+        familyMemberName, relation, familyMemberWANumber, emergencyNumber, is7YatraDoneEarlier, haveYouDoneVaiyavachEarlier, howToReachPalitana, howManyDaysJoin, typeOfVaiyavach, valueOfVaiyavach, vaiyavachiConfirmation, familyConfirmation
+      } = req.body;
+      console.log('Request body:', req.body);
+      console.log('File:', req.file);
+      // Save Vaiyavachi registration (isPaid: 'unpaid')
+      const vaiyavachiImagePath = req.file ? `/7-jatra-vaiyavach/${req.file.filename}` : '';
+      const newVaiyavachi = new Vaiyavachi({
         name,
-        email: emailAddress,
-        contact: mobileNumber,
-      },
-      notify: {
-        sms: true,
-        email: true,
-      },
-      callback_url: process.env.PAYMENT_CALLBACK_URL, // e.g. https://yourdomain.com/payment-redirect
-      callback_method: 'get',
-      reference_id: newVaiyavachi._id.toString(),
-    });
-    // Store Payment link in Vaiyavachi
-    newVaiyavachi.paymentLink = paymentLink.short_url;
-    newVaiyavachi.orderId = paymentLink.id;
-    await newVaiyavachi.save();
-    // Store Payment record
-    const payment = new Payment({
-      vaiyavachiNo: newVaiyavachi.vaiyavachiNo,
-      orderId: paymentLink.id,
-      paymentId: paymentLink.payment_id || '',
-      signature: '',
-      amount: 500,
-      currency: 'INR',
-      status: 'created',
-      link: paymentLink.short_url,
-    });
-    await payment.save();
-    // Return payment link to frontend
-    res.json({ paymentLink: paymentLink.short_url, vaiyavachiNo: newVaiyavachi.vaiyavachiNo, orderId: paymentLink.id });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+        mobileNumber,
+        whatsappNumber,
+        emailAddress,
+        education,
+        religiousEducation,
+        weight,
+        height,
+        dob,
+        address,
+        city,
+        state,
+        familyMemberName,
+        relation,
+        familyMemberWANumber,
+        emergencyNumber,
+        is7YatraDoneEarlier,
+        haveYouDoneVaiyavachEarlier,
+        howToReachPalitana,
+        howManyDaysJoin,
+        typeOfVaiyavach,
+        valueOfVaiyavach,
+        vaiyavachiConfirmation,
+        familyConfirmation,
+        vaiyavachiImage: vaiyavachiImagePath,
+        isPaid: 'unpaid',
+      });
+      await newVaiyavachi.save();
+      console.log('Vaiyavachi saved:', newVaiyavachi._id);
+      // Fetch the saved Vaiyavachi to get vaiyavachiNo (pre-save hook runs here)
+      const savedVaiyavachi = await Vaiyavachi.findById(newVaiyavachi._id);
+      // Create Razorpay Payment Link
+      const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+      });
+      const paymentLink = await razorpay.paymentLink.create({
+        amount: 50000, // Rs. 500.00 in paise
+        currency: 'INR',
+        accept_partial: false,
+        description: '7 Yatra 2025 Registration',
+        customer: {
+          name,
+          email: emailAddress,
+          contact: mobileNumber,
+        },
+        notify: {
+          sms: true,
+          email: true,
+        },
+        callback_url: process.env.PAYMENT_CALLBACK_URL, // e.g. https://yourdomain.com/payment-redirect
+        callback_method: 'get',
+        reference_id: savedVaiyavachi._id.toString(),
+      });
+      console.log('Payment link created:', paymentLink.short_url);
+      // Store Payment link in Vaiyavachi
+      savedVaiyavachi.paymentLink = paymentLink.short_url;
+      savedVaiyavachi.orderId = paymentLink.id;
+      await savedVaiyavachi.save();
+      // Store Payment record with correct vaiyavachiNo
+      const payment = new Payment({
+        vaiyavachiNo: savedVaiyavachi.vaiyavachiNo,
+        orderId: paymentLink.id,
+        paymentId: paymentLink.payment_id || '',
+        signature: '',
+        amount: 500,
+        currency: 'INR',
+        status: 'created',
+        link: paymentLink.short_url,
+      });
+      await payment.save();
+      console.log('Payment record saved:', payment._id);
+      // Return payment link to frontend
+      res.json({ paymentLink: paymentLink.short_url, vaiyavachiNo: savedVaiyavachi.vaiyavachiNo, orderId: paymentLink.id });
+      console.log('--- [createPaymentLink] Response sent ---');
+    } catch (error) {
+      console.error('--- [createPaymentLink] ERROR ---', error);
+      res.status(500).json({ message: error.message });
+    }
   }
-};
-
+];
 
 
 // Razorpay Webhook for payment status (Vaiyavach)
 exports.razorpayWebhook = async (req, res) => {
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-    const signature = req.headers['x-razorpay-signature'];
-    const body = JSON.stringify(req.body);
-    const expectedSignature = crypto.createHmac('sha256', secret).update(body).digest('hex');
-    if (signature !== expectedSignature) {
-      return res.status(400).json({ message: 'Invalid webhook signature' });
-    }
-    const event = req.body.event;
-    if (event === 'payment_link.paid') {
-      const paymentLinkId = req.body.payload.payment_link.entity.id;
-      const paymentId = req.body.payload.payment.entity.id;
-      const paymentSignature = signature;
-      // Update Payment and Vaiyavachi
-      const payment = await Payment.findOneAndUpdate(
-        { orderId: paymentLinkId },
-        { status: 'paid', paymentId, signature: paymentSignature, paymentCompletedAt: new Date() },
-        { new: true }
+
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const signature = req.headers['x-razorpay-signature'];
+  const body = JSON.stringify(req.body);
+  const expectedSignature = crypto.createHmac('sha256', secret).update(body).digest('hex');
+  if (signature !== expectedSignature) {
+    return res.status(400).json({ message: 'Invalid webhook signature' });
+  }
+  const event = req.body.event;
+  if (event === 'payment_link.paid') {
+    const paymentLinkId = req.body.payload.payment_link.entity.id;
+    const paymentId = req.body.payload.payment.entity.id;
+    const paymentSignature = signature;
+    console.log(`paymentlinkid: ${paymentLinkId}, paymentId: ${paymentId}, signature: ${paymentSignature}`);
+
+    // Update Payment and Yatrik
+    const payment = await Payment.findOneAndUpdate(
+      { orderId: paymentLinkId },
+      { status: 'paid', paymentId, signature: paymentSignature, paymentCompletedAt: new Date() },
+      { new: true }
+    );
+    if (payment) {
+      await Yatrik.findOneAndUpdate(
+        { vaiyavachiNo: payment.vaiyavachiNo },
+        { isPaid: 'paid' }
       );
-      if (payment) {
-        await Vaiyavachi.findOneAndUpdate(
-          { vaiyavachiNo: payment.vaiyavachiNo },
-          { isPaid: 'paid' }
-        );
-      }
     }
-    res.json({ status: 'ok' });
-  };
+  }
+  res.json({ status: 'ok' });
+};
   
   // Verify payment status (frontend polling after redirect) for Vaiyavach
   exports.verifyPayment = async (req, res) => {

@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const bodyParser = require('body-parser');
+const multer = require('multer');
 
 // const rssmsuRoutes = require('./routes/rssmsu');
 
@@ -30,6 +31,18 @@ app.use('/api/vaiyavach', require('./routes/vaiyavchRoutes'));
 
 // Razorpay webhook endpoint (ensure raw body for signature verification)
 app.post('/api/yatriks/razorpay-webhook', bodyParser.raw({ type: '*/*' }), require('./controllers/yatrikController').razorpayWebhook);
+
+// Multer/global error handler
+app.use(function (err, req, res, next) {
+  if (err instanceof multer.MulterError) {
+    // Multer-specific errors (e.g., file too large)
+    return res.status(400).json({ message: err.message });
+  } else if (err) {
+    // Other errors
+    return res.status(500).json({ message: err.message });
+  }
+  next();
+});
 
 const PORT = process.env.PORT || 5000;
 

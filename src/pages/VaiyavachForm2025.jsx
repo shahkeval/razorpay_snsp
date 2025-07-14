@@ -166,10 +166,10 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
     }
   };
   const vaiyavachPrevStep = () => setVaiyavachCurrentStep((prev) => Math.max(prev - 1, 1));
-  const handleVaiyavachChange = async (e) => {
+  const handleVaiyavachChange = (e) => {
     const { name, value, files, type } = e.target;
     let errors = { ...vaiyavachErrors };
-    // Image size validation and compression
+    // Image file upload (no base64, just file)
     if (name === "vaiyavachiPhoto" && files) {
       const file = files[0];
       if (file && file.size > 5 * 1024 * 1024) {
@@ -181,26 +181,8 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
       } else {
         delete errors.vaiyavachiPhoto;
         setVaiyavachErrors(errors);
-        // Compress the image before converting to base64
-        try {
-          const compressedFile = await imageCompression(file, {
-            maxSizeMB: 0.5,
-            maxWidthOrHeight: 1024,
-            useWebWorker: true,
-          });
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const base64String = reader.result;
-            setVaiyavachForm((prev) => ({ ...prev, [name]: base64String }));
-            setVaiyavachPhotoPreview(base64String);
-          };
-          reader.readAsDataURL(compressedFile);
-        } catch (err) {
-          errors.vaiyavachiPhoto = "Image compression failed. Please try another image.";
-          setVaiyavachErrors(errors);
-          setVaiyavachPhotoPreview(null);
-          setVaiyavachForm((prev) => ({ ...prev, [name]: null }));
-        }
+        setVaiyavachForm((prev) => ({ ...prev, [name]: file }));
+        setVaiyavachPhotoPreview(URL.createObjectURL(file));
         return;
       }
     }
@@ -333,40 +315,41 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
     if (!validateBeforeSubmit()) return;
     setIsSubmittingRegistration(true);
     try {
-      const payload = {
-        vaiyavachiImage: vaiyavachForm.vaiyavachiPhoto, // base64 string
-        name: vaiyavachForm.vaiyavachiName,
-        mobileNumber: vaiyavachForm.mobileNumber,
-        whatsappNumber: vaiyavachForm.whatsappNumber,
-        emailAddress: vaiyavachForm.email,
-        education: vaiyavachForm.education,
-        religiousEducation: vaiyavachForm.religiousEducation,
-        weight: vaiyavachForm.weight,
-        height: vaiyavachForm.height,
-        dob: vaiyavachForm.dateOfBirth,
-        address: vaiyavachForm.address,
-        state: vaiyavachForm.state,
-        city: vaiyavachForm.city,
-        familyMemberName: vaiyavachForm.familyMemberName,
-        relation: vaiyavachForm.familyMemberRelation,
-        familyMemberWANumber: vaiyavachForm.familyMemberWhatsapp,
-        emergencyNumber: vaiyavachForm.emergencyNumber,
-        is7YatraDoneEarlier: vaiyavachForm.done7YatraEarlier,
-        haveYouDoneVaiyavachEarlier: vaiyavachForm.doneVaiyavachEarlier,
-        howToReachPalitana: vaiyavachForm.howToReachPalitana,
-        howManyDaysJoin: vaiyavachForm.howManyDaysJoin,
-        typeOfVaiyavach: vaiyavachForm.typeOfVaiyavach,
-        valueOfVaiyavach: vaiyavachForm.vaiyavachTypeValue,
-        vaiyavachiConfirmation: vaiyavachForm.vaiyavachiConfirmation,
-        familyConfirmation: vaiyavachForm.familyConfirmation,
-        transactionNumber: vaiyavachTransactionNumber,
-      };
+      const formData = new FormData();
+      formData.append("vaiyavachiPhoto", vaiyavachForm.vaiyavachiPhoto); // file
+      formData.append("name", vaiyavachForm.vaiyavachiName);
+      formData.append("mobileNumber", vaiyavachForm.mobileNumber);
+      formData.append("whatsappNumber", vaiyavachForm.whatsappNumber);
+      formData.append("emailAddress", vaiyavachForm.email);
+      formData.append("education", vaiyavachForm.education);
+      formData.append("religiousEducation", vaiyavachForm.religiousEducation);
+      formData.append("weight", vaiyavachForm.weight);
+      formData.append("height", vaiyavachForm.height);
+      formData.append("dob", vaiyavachForm.dateOfBirth);
+      formData.append("address", vaiyavachForm.address);
+      formData.append("state", vaiyavachForm.state);
+      formData.append("city", vaiyavachForm.city);
+      formData.append("familyMemberName", vaiyavachForm.familyMemberName);
+      formData.append("relation", vaiyavachForm.familyMemberRelation);
+      formData.append("familyMemberWANumber", vaiyavachForm.familyMemberWhatsapp);
+      formData.append("emergencyNumber", vaiyavachForm.emergencyNumber);
+      formData.append("is7YatraDoneEarlier", vaiyavachForm.done7YatraEarlier);
+      formData.append("haveYouDoneVaiyavachEarlier", vaiyavachForm.doneVaiyavachEarlier);
+      formData.append("howToReachPalitana", vaiyavachForm.howToReachPalitana);
+      formData.append("howManyDaysJoin", vaiyavachForm.howManyDaysJoin);
+      formData.append("typeOfVaiyavach", vaiyavachForm.typeOfVaiyavach);
+      formData.append("valueOfVaiyavach", vaiyavachForm.vaiyavachTypeValue);
+      formData.append("vaiyavachiConfirmation", vaiyavachForm.vaiyavachiConfirmation);
+      formData.append("familyConfirmation", vaiyavachForm.familyConfirmation);
+      formData.append("transactionNumber", vaiyavachTransactionNumber);
       const res = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/vaiyavach/createPaymentLink`,
-        payload,
-        { headers: { "Content-Type": "application/json" } }
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
+      console.log("object",res)
       const { paymentLink, vaiyavachiNo, orderId } = res.data;
+      console.log("Test")
       sessionStorage.setItem('vaiyavachiNo', vaiyavachiNo);
       sessionStorage.setItem('orderId', orderId);
       window.location.href = paymentLink;

@@ -25,7 +25,7 @@ const vaiyavachiSchema = new mongoose.Schema({
     valueOfVaiyavach: { type: String, required: true },
     vaiyavachiConfirmation: { type: String, required: true },
     familyConfirmation: { type: String, required: true },
-    vaiyavachiImage: { type: String, required: true },
+    vaiyavachiImage: { type: String, required: true},
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },

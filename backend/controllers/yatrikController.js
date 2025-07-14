@@ -117,6 +117,7 @@ exports.createPaymentLink = [
 
 // 2. Razorpay Webhook for payment status
 exports.razorpayWebhook = async (req, res) => {
+
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
   const signature = req.headers['x-razorpay-signature'];
   const body = JSON.stringify(req.body);
@@ -129,6 +130,8 @@ exports.razorpayWebhook = async (req, res) => {
     const paymentLinkId = req.body.payload.payment_link.entity.id;
     const paymentId = req.body.payload.payment.entity.id;
     const paymentSignature = signature;
+    console.log(`paymentlinkid: ${paymentLinkId}, paymentId: ${paymentId}, signature: ${paymentSignature}`);
+
     // Update Payment and Yatrik
     const payment = await Payment.findOneAndUpdate(
       { orderId: paymentLinkId },
@@ -180,7 +183,7 @@ exports.verifyPayment = async (req, res) => {
     if (razorpayRes.status === 'paid') {
       // Update existing Payment record with all details
       payment.status = 'paid';
-      payment.amount = '500';
+      payment.amount = '5000';
       payment.method = razorpayRes.payment ? razorpayRes.payment.method : payment.method;
       payment.razorpayDetails = razorpayRes;
       payment.paidAt = razorpayRes.paid_at ? new Date(razorpayRes.paid_at * 1000) : new Date();
