@@ -240,6 +240,44 @@ const EventDetails = () => {
     }
   }, [location.search]);
 
+  // Vaiyavach payment status polling (identical to Yatrik, but for Vaiyavach)
+  useEffect(() => {
+    // Check for Razorpay payment params in URL
+    const params = getQueryParams(location.search);
+    // Only run if user came from Vaiyavach payment (sessionStorage or param)
+    const isVaiyavach = sessionStorage.getItem('vaiyavachNo') || params.vaiyavach === '1';
+    if (
+      isVaiyavach &&
+      params.razorpay_payment_id &&
+      params.razorpay_payment_link_id &&
+      params.razorpay_signature &&
+      params.razorpay_payment_link_status
+    ) {
+      setPaymentStatus('verifying');
+      let pollCount = 0;
+      const poll = setInterval(async () => {
+        try {
+          const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/vaiyavach/verifyvaiyavachpayment?orderId=${params.razorpay_payment_link_id}`);
+          if (res.data.status === 'paid') {
+            setPaymentStatus('paid');
+            setVaiyavachPaymentThankYou(true);
+            clearInterval(poll);
+          } else if (pollCount > 15) { // Timeout after ~1min
+            setPaymentStatus('error');
+            setPaymentError('Payment verification failed. Please refresh or Please contact support. Phone:-7383120787');
+            clearInterval(poll);
+          }
+        } catch (err) {
+          setPaymentStatus('error');
+          setPaymentError('Payment verification failed. Please refresh or Please contact support. Phone:-7383120787');
+          clearInterval(poll);
+        }
+        pollCount++;
+      }, 4000);
+      return () => clearInterval(poll);
+    }
+  }, [location.search]);
+
   useEffect(() => {
     if (timer > 0 && qrData) {
       const interval = setInterval(() => {

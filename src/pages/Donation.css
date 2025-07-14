@@ -55,8 +55,13 @@
   }
   
   .error-message {
-    color: red;
-    text-align: center;
+    color: #d32f2f;
+    font-size: 0.95rem;
+    margin-top: 2px;
+    margin-bottom: 0;
+    text-align: left;
+    padding-left: 2px;
+    font-weight: 500;
   }
   
   .back-button, .gpay-button {

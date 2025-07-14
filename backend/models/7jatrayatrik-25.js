@@ -24,7 +24,7 @@ const yatrikSchema = new mongoose.Schema({
     familyConfirmation: { type: String, required:true },
     isActive: { type: Boolean, default: true },
     yatrikNo: { type: String, unique: true },
-    yatrikPhoto: { type: String, required: true },
+    yatrikPhoto: { type: String },
     isPaid: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid', required: true },
     paymentLink: { type: String },
     createdAt: { type: Date, default: Date.now },

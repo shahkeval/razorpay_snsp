@@ -70,7 +70,7 @@ const DonationManagement = () => {
       columnFilters.forEach(f => {
         params[f.id] = f.value;
       });
-      const res = await axios.get('https://namonamahshaswatparivar-dt17.vercel.app/api/donations', { params });
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/donations`, { params });
       setDonations(res.data.donations);
       setRowCount(res.data.total);
     } catch (err) {
@@ -115,10 +115,10 @@ const DonationManagement = () => {
   const handleSave = async () => {
     try {
       if (editDonation) {
-        await axios.put(`https://namonamahshaswatparivar-dt17.vercel.app/api/donations/${editDonation._id}`, form);
+        await axios.put(`${process.env.REACT_APP_API_BASE_URL}/api/donations/${editDonation._id}`, form);
         setSnackbar({ open: true, message: 'Donation updated successfully', severity: 'success' });
       } else {
-        await axios.post('https://namonamahshaswatparivar-dt17.vercel.app/api/donations', form);
+        await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/donations`, form);
         setSnackbar({ open: true, message: 'Donation added successfully', severity: 'success' });
       }
       fetchDonations();
@@ -131,7 +131,7 @@ const DonationManagement = () => {
   const handleDelete = async (row) => {
     if (window.confirm('Are you sure you want to delete this donation?')) {
       try {
-        await axios.delete(`https://namonamahshaswatparivar-dt17.vercel.app/api/donations/${row.original._id}`);
+        await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/donations/${row.original._id}`);
         setSnackbar({ open: true, message: 'Donation deleted successfully', severity: 'success' });
         fetchDonations();
       } catch {

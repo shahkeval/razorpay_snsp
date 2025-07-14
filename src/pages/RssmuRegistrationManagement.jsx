@@ -60,7 +60,7 @@ const RssmuRegistrationManagement = () => {
         order: sorting[0]?.desc ? 'desc' : 'asc',
         ...Object.fromEntries(columnFilters.map(filter => [filter.id, filter.value])),
       };
-      const res = await axios.get('https://namonamahshaswatparivar-dt17.vercel.app/api/rssmsu/allrssmreg', { params });
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/rssmsu/allrssmreg`, { params });
       setRegistrations(res.data.registrations);
       setRowCount(res.data.total);
     } catch (err) {
@@ -114,10 +114,10 @@ const RssmuRegistrationManagement = () => {
   const handleSave = async () => {
     try {
       if (editRegistration) {
-        await axios.put(`https://namonamahshaswatparivar-dt17.vercel.app/api/rssmsu/${editRegistration._id}`, form);
+        await axios.put(`${process.env.REACT_APP_API_BASE_URL}/api/rssmsu/${editRegistration._id}`, form);
         setSnackbar({ open: true, message: 'Registration updated successfully', severity: 'success' });
       } else {
-        await axios.post('https://namonamahshaswatparivar-dt17.vercel.app/api/rssmsu', form);
+        await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/rssmsu`, form);
         setSnackbar({ open: true, message: 'Registration added successfully', severity: 'success' });
       }
       fetchRegistrations();
@@ -130,7 +130,7 @@ const RssmuRegistrationManagement = () => {
   const handleDelete = async (row) => {
     if (window.confirm('Are you sure you want to delete this registration?')) {
       try {
-        await axios.delete(`https://namonamahshaswatparivar-dt17.vercel.app/api/rssmsu/${row.original._id}`);
+        await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/rssmsu/${row.original._id}`);
         setSnackbar({ open: true, message: 'Registration deleted successfully', severity: 'success' });
         fetchRegistrations();
       } catch {
@@ -141,7 +141,7 @@ const RssmuRegistrationManagement = () => {
 
   const handleExcelDownload = async () => {
     try {
-      const response = await axios.get('https://namonamahshaswatparivar-dt17.vercel.app/api/rssmsu/allregistartions');
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/rssmsu/allregistartion`);
       const data = response.data;
 
       // Reorder the data to place registrationId first and exclude _id and __v

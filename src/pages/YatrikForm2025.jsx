@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import imageCompression from 'browser-image-compression';
 
 const YatrikForm2025 = ({ event, onComplete }) => {
   // State
@@ -36,6 +37,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
   const [paymentError, setPaymentError] = useState("");
   const [isSubmittingRegistration, setIsSubmittingRegistration] = useState(false);
   const [paymentLinkError, setPaymentLinkError] = useState("");
+  const [yatrikErrors, setYatrikErrors] = useState({});
 
   // Data
   const states = require("../data/IN-states.json");
@@ -79,18 +81,86 @@ const YatrikForm2025 = ({ event, onComplete }) => {
   }, [yatraRegistrationData.yatrikPhoto]);
 
   // Handlers
+  const validateField = (name, value, allValues = {}) => {
+    let error = '';
+    if (["phone", "whatsappNumber", "familyMemberWhatsapp", "emergencyNumber"].includes(name)) {
+      if (!/^[0-9]{0,10}$/.test(value)) error = 'Only digits allowed';
+      else if (value.length !== 10) error = 'Must be exactly 10 digits';
+    }
+    if (name === "email") {
+      if (!/^\S+@\S+\.\S+$/.test(value)) error = 'Invalid email address';
+    }
+    if (["weight", "height"].includes(name)) {
+      if (!/^[0-9]*$/.test(value)) error = 'Only positive numbers allowed';
+      else if (value === '' || parseInt(value) <= 0) error = 'Must be a positive number';
+    }
+    if (name === "address") {
+      if (value.length > 255) error = 'Address cannot exceed 255 characters';
+    }
+    if (name === "yatrikConfirmation" || name === "familyConfirmation") {
+      if (allValues.yatrikConfirmation !== 'yes' || allValues.familyConfirmation !== 'yes') {
+        error = 'Both confirmations must be Yes';
+      }
+    }
+    return error;
+  };
+  const handleYatraRegistrationChange = (e) => {
+    const { name, value } = e.target;
+    let fieldValue = value;
+    // For mobile fields, allow only digits and max 10
+    if (["phone", "whatsappNumber", "familyMemberWhatsapp", "emergencyNumber"].includes(name)) {
+      fieldValue = value.replace(/[^0-9]/g, '').slice(0, 10);
+    }
+    // For weight/height, allow only positive numbers
+    if (["weight", "height"].includes(name)) {
+      fieldValue = value.replace(/[^0-9]/g, '');
+    }
+    // For address, limit to 255 chars
+    if (name === "address") {
+      fieldValue = value.slice(0, 255);
+    }
+    setYatraRegistrationData((prev) => ({ ...prev, [name]: fieldValue }));
+    setYatrikErrors((prev) => ({ ...prev, [name]: validateField(name, fieldValue, { ...yatraRegistrationData, [name]: fieldValue }) }));
+  };
+  const validateStep = (step) => {
+    let errors = {};
+    if (step === 1) {
+      ["yatrikPhoto", "fullName", "phone", "whatsappNumber"].forEach((f) => {
+        const err = validateField(f, yatraRegistrationData[f] || '');
+        if (err) errors[f] = err;
+      });
+    }
+    if (step === 2) {
+      ["email", "education", "religiousEducation", "weight", "height", "dateOfBirth", "address", "state", "city"].forEach((f) => {
+        const err = validateField(f, yatraRegistrationData[f] || '');
+        if (err) errors[f] = err;
+      });
+    }
+    if (step === 3) {
+      ["familyMemberName", "familyMemberRelation", "familyMemberWhatsapp", "emergencyNumber"].forEach((f) => {
+        const err = validateField(f, yatraRegistrationData[f] || '');
+        if (err) errors[f] = err;
+      });
+    }
+    if (step === 4) {
+      ["yatrikConfirmation", "familyConfirmation"].forEach((f) => {
+        const err = validateField(f, yatraRegistrationData[f] || '', yatraRegistrationData);
+        if (err) errors[f] = err;
+      });
+    }
+    return errors;
+  };
   const nextStep = (e) => {
     if (e) e.preventDefault();
+    const errors = validateStep(currentStep);
+    setYatrikErrors(errors);
+    if (Object.values(errors).some(Boolean)) return;
     setCurrentStep((prev) => Math.min(prev + 1, 5));
     setYatraRegistrationData((prev) => ({ ...prev, progress: prev.progress + 25 }));
   };
   const prevStep = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
     setYatraRegistrationData((prev) => ({ ...prev, progress: prev.progress - 25 }));
-  };
-  const handleYatraRegistrationChange = (e) => {
-    const { name, value } = e.target;
-    setYatraRegistrationData((prev) => ({ ...prev, [name]: value }));
   };
   const handleAddAnotherResponse = () => {
     setPaymentThankYou(false);
@@ -130,6 +200,12 @@ const YatrikForm2025 = ({ event, onComplete }) => {
   };
   const handlePayNow = async (e) => {
     e.preventDefault();
+    // Check for image presence and validity
+    if (!yatraRegistrationData.yatrikPhoto || !yatraRegistrationData.yatrikPhoto.startsWith('data:image/')) {
+      alert('Please select and upload a valid Yatrik photo.');
+      setIsSubmittingRegistration(false);
+      return;
+    }
     setIsSubmittingRegistration(true);
     try {
       const formData = new FormData();
@@ -161,7 +237,8 @@ const YatrikForm2025 = ({ event, onComplete }) => {
       const { paymentLink, yatrikNo, orderId } = res.data;
       sessionStorage.setItem('yatrikNo', yatrikNo);
       sessionStorage.setItem('orderId', orderId);
-      window.location.href = paymentLink;
+      window.open(paymentLink, '_blank');
+      // window.location.href = paymentLink;
     } catch (err) {
       alert('Failed to initiate payment. Please try again.');
       setIsSubmittingRegistration(false);
@@ -218,15 +295,31 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               id="yatrikPhoto"
               name="yatrikPhoto"
               accept="image/*"
-              onChange={(e) => {
-                setYatraRegistrationData({
-                  ...yatraRegistrationData,
-                  yatrikPhoto: e.target.files[0],
-                });
-                setYatrikPhotoPreview(URL.createObjectURL(e.target.files[0]));
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  try {
+                    const options = {
+                      maxSizeMB: 1,
+                      maxWidthOrHeight: 1920,
+                      useWebWorker: true,
+                    };
+                    const compressedFile = await imageCompression(file, options);
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      const base64String = reader.result;
+                      setYatraRegistrationData((prev) => ({ ...prev, yatrikPhoto: base64String }));
+                      setYatrikPhotoPreview(base64String);
+                    };
+                    reader.readAsDataURL(compressedFile);
+                  } catch (err) {
+                    alert('Image compression failed. Please try another image.');
+                  }
+                }
               }}
               required
             />
+            {yatrikErrors.yatrikPhoto && <div className="error-message">{yatrikErrors.yatrikPhoto}</div>}
           </div>
           {yatrikPhotoPreview && (
             <img
@@ -250,6 +343,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               }
               required
             />
+            {yatrikErrors.fullName && <div className="error-message">{yatrikErrors.fullName}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="mobileNumber">Mobile Number*</label>
@@ -258,14 +352,10 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               id="mobileNumber"
               name="mobileNumber"
               value={yatraRegistrationData.phone}
-              onChange={(e) =>
-                setYatraRegistrationData({
-                  ...yatraRegistrationData,
-                  phone: e.target.value,
-                })
-              }
+              onChange={handleYatraRegistrationChange}
               required
             />
+            {yatrikErrors.phone && <div className="error-message">{yatrikErrors.phone}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="whatsappNumber">WhatsApp Number*</label>
@@ -274,14 +364,10 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               id="whatsappNumber"
               name="whatsappNumber"
               value={yatraRegistrationData.whatsappNumber}
-              onChange={(e) =>
-                setYatraRegistrationData({
-                  ...yatraRegistrationData,
-                  whatsappNumber: e.target.value,
-                })
-              }
+              onChange={handleYatraRegistrationChange}
               required
             />
+            {yatrikErrors.whatsappNumber && <div className="error-message">{yatrikErrors.whatsappNumber}</div>}
           </div>
           <button type="submit" className="next-button">
             Next
@@ -297,14 +383,10 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               id="email"
               name="email"
               value={yatraRegistrationData.email}
-              onChange={(e) =>
-                setYatraRegistrationData({
-                  ...yatraRegistrationData,
-                  email: e.target.value,
-                })
-              }
+              onChange={handleYatraRegistrationChange}
               required
             />
+            {yatrikErrors.email && <div className="error-message">{yatrikErrors.email}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="education">Education*</label>
@@ -313,14 +395,10 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               id="education"
               name="education"
               value={yatraRegistrationData.education}
-              onChange={(e) =>
-                setYatraRegistrationData({
-                  ...yatraRegistrationData,
-                  education: e.target.value,
-                })
-              }
+              onChange={handleYatraRegistrationChange}
               required
             />
+            {yatrikErrors.education && <div className="error-message">{yatrikErrors.education}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="religiousEducation">Religious Education*</label>
@@ -329,14 +407,10 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               id="religiousEducation"
               name="religiousEducation"
               value={yatraRegistrationData.religiousEducation}
-              onChange={(e) =>
-                setYatraRegistrationData({
-                  ...yatraRegistrationData,
-                  religiousEducation: e.target.value,
-                })
-              }
+              onChange={handleYatraRegistrationChange}
               required
             />
+            {yatrikErrors.religiousEducation && <div className="error-message">{yatrikErrors.religiousEducation}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="weight">Weight (in kg)*</label>
@@ -345,14 +419,10 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               id="weight"
               name="weight"
               value={yatraRegistrationData.weight}
-              onChange={(e) =>
-                setYatraRegistrationData({
-                  ...yatraRegistrationData,
-                  weight: e.target.value,
-                })
-              }
+              onChange={handleYatraRegistrationChange}
               required
             />
+            {yatrikErrors.weight && <div className="error-message">{yatrikErrors.weight}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="height">Height (in cm)*</label>
@@ -361,14 +431,10 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               id="height"
               name="height"
               value={yatraRegistrationData.height}
-              onChange={(e) =>
-                setYatraRegistrationData({
-                  ...yatraRegistrationData,
-                  height: e.target.value,
-                })
-              }
+              onChange={handleYatraRegistrationChange}
               required
             />
+            {yatrikErrors.height && <div className="error-message">{yatrikErrors.height}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="dateOfBirth">Date of Birth*</label>
@@ -385,6 +451,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               }
               required
             />
+            {yatrikErrors.dateOfBirth && <div className="error-message">{yatrikErrors.dateOfBirth}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="address">Address*</label>
@@ -393,14 +460,13 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               id="address"
               name="address"
               value={yatraRegistrationData.address}
-              onChange={(e) =>
-                setYatraRegistrationData({
-                  ...yatraRegistrationData,
-                  address: e.target.value,
-                })
-              }
+              onChange={handleYatraRegistrationChange}
               required
             />
+            <div style={{ fontSize: '0.85rem', color: '#888', marginTop: 2, marginBottom: 0, textAlign: 'left', paddingLeft: 2 }}>
+              {yatraRegistrationData.address.length} / 255 characters
+            </div>
+            {yatrikErrors.address && <div className="error-message">{yatrikErrors.address}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="state">State*</label>
@@ -423,6 +489,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
                 </option>
               ))}
             </select>
+            {yatrikErrors.state && <div className="error-message">{yatrikErrors.state}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="city">City*</label>
@@ -445,6 +512,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
                 </option>
               ))}
             </select>
+            {yatrikErrors.city && <div className="error-message">{yatrikErrors.city}</div>}
           </div>
           <button type="button" className="back-button-yatra" onClick={prevStep}>
             Back
@@ -467,6 +535,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               onChange={handleYatraRegistrationChange}
               required
             />
+            {yatrikErrors.familyMemberName && <div className="error-message">{yatrikErrors.familyMemberName}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="familyMemberRelation">Relation*</label>
@@ -478,6 +547,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               onChange={handleYatraRegistrationChange}
               required
             />
+            {yatrikErrors.familyMemberRelation && <div className="error-message">{yatrikErrors.familyMemberRelation}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="familyMemberWhatsapp">Family Member WhatsApp Number*</label>
@@ -489,6 +559,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               onChange={handleYatraRegistrationChange}
               required
             />
+            {yatrikErrors.familyMemberWhatsapp && <div className="error-message">{yatrikErrors.familyMemberWhatsapp}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="emergencyNumber">Emergency Number*</label>
@@ -500,6 +571,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               onChange={handleYatraRegistrationChange}
               required
             />
+            {yatrikErrors.emergencyNumber && <div className="error-message">{yatrikErrors.emergencyNumber}</div>}
           </div>
           <button type="button" className="back-button-yatra" onClick={prevStep}>
             Back
@@ -537,6 +609,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
                 No
               </label>
             </div>
+            {yatrikErrors.done7YatraEarlier && <div className="error-message">{yatrikErrors.done7YatraEarlier}</div>}
           </div>
           {yatraRegistrationData.done7YatraEarlier === "yes" && (
             <div className="form-group">
@@ -550,6 +623,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
                 min="1"
                 required
               />
+              {yatrikErrors.howManyTimes && <div className="error-message">{yatrikErrors.howManyTimes}</div>}
             </div>
           )}
           <div className="form-group">
@@ -578,7 +652,9 @@ const YatrikForm2025 = ({ event, onComplete }) => {
                 Direct Palitana
               </label>
             </div>
+            {yatrikErrors.howToReachPalitana && <div className="error-message">{yatrikErrors.howToReachPalitana}</div>}
           </div>
+          {/* Yatrik Confirmation radio group */}
           <div className="form-group">
             <label>Yatrik Confirmation</label>
             <div style={{ display: "flex", gap: "2rem", margin: "0.5rem 0 1rem 0" }}>
@@ -590,8 +666,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
                   checked={yatraRegistrationData.yatrikConfirmation === "yes"}
                   onChange={handleYatraRegistrationChange}
                   required
-                />{" "}
-                Yes
+                /> Yes
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
                 <input
@@ -601,11 +676,12 @@ const YatrikForm2025 = ({ event, onComplete }) => {
                   checked={yatraRegistrationData.yatrikConfirmation === "no"}
                   onChange={handleYatraRegistrationChange}
                   required
-                />{" "}
-                No
+                /> No
               </label>
             </div>
+            {yatraRegistrationData.yatrikConfirmation !== 'yes' && <div className="error-message">Yatrik Confirmation is required.</div>}
           </div>
+          {/* Family Confirmation radio group */}
           <div className="form-group">
             <label>Family Confirmation</label>
             <div style={{ display: "flex", gap: "2rem", margin: "0.5rem 0 1rem 0" }}>
@@ -617,8 +693,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
                   checked={yatraRegistrationData.familyConfirmation === "yes"}
                   onChange={handleYatraRegistrationChange}
                   required
-                />{" "}
-                Yes
+                /> Yes
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
                 <input
@@ -628,10 +703,10 @@ const YatrikForm2025 = ({ event, onComplete }) => {
                   checked={yatraRegistrationData.familyConfirmation === "no"}
                   onChange={handleYatraRegistrationChange}
                   required
-                />{" "}
-                No
+                /> No
               </label>
             </div>
+            {yatraRegistrationData.familyConfirmation !== 'yes' && <div className="error-message">Family Confirmation is required.</div>}
           </div>
           <div
             style={{

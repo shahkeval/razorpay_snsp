@@ -2,13 +2,8 @@ const express = require('express');
 const router = express.Router();
 const vaiyavachiController = require('../controllers/vaiyavachiController');
 
-// Create Vaiyavachi with image upload or base64
+// Create Vaiyavachi with image upload
 router.post('/createvaiyavachi', vaiyavachiController.createVaiyavachi);
-
-// Vaiyavach Razorpay payment flow
-router.post('/createPaymentLink', vaiyavachiController.createPaymentLink);
-router.post('/razorpay-webhook', vaiyavachiController.razorpayWebhook);
-router.get('/verifyPayment', vaiyavachiController.verifyPayment);
 
 // Get all Vaiyavachis
 router.get('/getvaiyavchi', vaiyavachiController.getAllVaiyavachis);
@@ -25,8 +20,14 @@ router.delete('/deletevaiyavachi/:id', vaiyavachiController.deleteVaiyavachi);
 // Get Vaiyavachi summary
 router.get('/vaiyavachisummary', vaiyavachiController.getVaiyavachiSummary);
 
-// Add the new endpoint for type counts
-router.get('/type-counts', vaiyavachiController.getVaiyavachTypeCounts);
+// Vaiyavach payment link creation
+router.post('/createvaiyavachpayment', vaiyavachiController.createPaymentLink);
+// Vaiyavach Razorpay webhook
+router.post('/razorpay-webhook', vaiyavachiController.razorpayWebhook);
+// Vaiyavach payment status verification
+router.get('/verifyvaiyavachpayment', vaiyavachiController.verifyPayment);
+
+router.get('/type-value-counts', vaiyavachiController.getTypeValueCounts);
 
 module.exports = router;
 

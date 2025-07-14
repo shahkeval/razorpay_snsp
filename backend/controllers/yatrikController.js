@@ -4,6 +4,7 @@ const path = require('path');
 const multer = require('multer');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const fs = require('fs');
 
 // Multer storage config for yatrik photo
 const storage = multer.diskStorage({
@@ -32,18 +33,43 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Helper to save base64 image
+async function saveBase64Image(base64String, folderPath, prefix = 'YATRIK') {
+  // base64String: data:image/png;base64,....
+  const matches = base64String.match(/^data:(.+);base64,(.+)$/);
+  if (!matches) throw new Error('Invalid base64 image string');
+  const ext = matches[1].split('/')[1];
+  const buffer = Buffer.from(matches[2], 'base64');
+  const filename = `${prefix}-${Date.now()}.${ext}`;
+  const filePath = path.join(folderPath, filename);
+  await fs.promises.writeFile(filePath, buffer);
+  return `/7-jatra-yatrik/${filename}`;
+}
+
+// Multer with higher fieldSize for base64 in createPaymentLink
+const uploadLargeField = multer({ storage, limits: { fieldSize: 10 * 1024 * 1024 } });
+
 // 1. Create Razorpay Payment Link and store Yatrik + Payment
 exports.createPaymentLink = [
-  upload.single('yatrikPhoto'),
+  async (req, res, next) => {
+    if (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data')) {
+      uploadLargeField.single('yatrikPhoto')(req, res, next);
+    } else {
+      next();
+    }
+  },
   async (req, res) => {
     try {
       // Extract registration fields
       const {
         name, mobileNumber, whatsappNumber, emailAddress, education, religiousEducation, weight, height, dob, address, city, state,
-        familyMemberName, relation, familyMemberWANumber, emergencyNumber, is7YatraDoneEarlier, earlier7YatraCounts, howToReachPalitana, yatrikConfirmation, familyConfirmation
+        familyMemberName, relation, familyMemberWANumber, emergencyNumber, is7YatraDoneEarlier, earlier7YatraCounts, howToReachPalitana, yatrikConfirmation, familyConfirmation, yatrikPhoto
       } = req.body;
-      // Save Yatrik registration (isPaid: 'unpaid')
-      const yatrikPhotoPath = req.file ? `/7-jatra-yatrik/${req.file.filename}` : '';
+      // Check for image presence
+      if (!req.file && !(yatrikPhoto && yatrikPhoto.startsWith('data:image/'))) {
+        return res.status(400).json({ message: 'Yatrik photo is required.' });
+      }
+      // Save Yatrik registration (isPaid: 'unpaid', no image yet)
       const newYatrik = new Yatrik({
         name,
         mobileNumber,
@@ -66,10 +92,37 @@ exports.createPaymentLink = [
         howToReachPalitana,
         yatrikConfirmation,
         familyConfirmation,
-        yatrikPhoto: yatrikPhotoPath,
+        yatrikPhoto: '', // Temporary value to pass validation
         isPaid: 'unpaid',
       });
       await newYatrik.save();
+      // Now get yatrikNo
+      const yatrikNo = newYatrik.yatrikNo;
+      let yatrikPhotoPath = '';
+      const folderPath = path.join(__dirname, '../../public/7-jatra-yatrik');
+      if (req.file) {
+        // Rename uploaded file to match yatrikNo
+        const ext = path.extname(req.file.originalname);
+        const newFileName = `${yatrikNo}${ext}`;
+        const newFilePath = path.join(folderPath, newFileName);
+        await fs.promises.rename(req.file.path, newFilePath);
+        yatrikPhotoPath = `/7-jatra-yatrik/${newFileName}`;
+      } else if (yatrikPhoto && yatrikPhoto.startsWith('data:image/')) {
+        // Save base64 image with yatrikNo
+        const matches = yatrikPhoto.match(/^data:(.+);base64,(.+)$/);
+        if (!matches) throw new Error('Invalid base64 image string');
+        const ext = matches[1].split('/')[1];
+        const buffer = Buffer.from(matches[2], 'base64');
+        const fileName = `${yatrikNo}.${ext}`;
+        const filePath = path.join(folderPath, fileName);
+        await fs.promises.writeFile(filePath, buffer);
+        yatrikPhotoPath = `/7-jatra-yatrik/${fileName}`;
+      }
+      // Update document with image path
+      if (yatrikPhotoPath) {
+        newYatrik.yatrikPhoto = yatrikPhotoPath;
+        await newYatrik.save();
+      }
       // Create Razorpay Payment Link
       const razorpay = new Razorpay({
         key_id: process.env.RAZORPAY_KEY_ID,
