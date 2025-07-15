@@ -22,7 +22,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Enable CORS with specific allowed origins
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://namonamahshaswatparivar.in/', // Add your frontend URL(s) here
+  'https://namonamahshaswatparivar.in', // Add your frontend URL(s) here
   // 'https://your-production-frontend.com',
 ];
 app.use(cors({
