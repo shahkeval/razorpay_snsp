@@ -6,6 +6,8 @@ import {
   Typography,
   Snackbar,
   Alert,
+  Grid,
+  Paper,
 } from '@mui/material';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
@@ -13,69 +15,102 @@ import Footer from '../components/Footer';
 import * as XLSX from 'xlsx';
 import './7Yatra2025VaiyavachManagementPage.css';
 
-const Yatra2025ManagementPage = () => {
-  const [yatriks, setYatriks] = useState([]);
+const Yatra2025VaiyavachManagementPage = () => {
+  const [vaiyavachis, setVaiyavachis] = useState([]);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [globalFilter, setGlobalFilter] = useState('');
-  const [sorting, setSorting] = useState([{ id: 'yatrikNo', desc: false }]);
+  const [sorting, setSorting] = useState([{ id: 'vaiyavachNo', desc: false }]);
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 });
   const [columnFilters, setColumnFilters] = useState([]);
   const [rowCount, setRowCount] = useState(0);
-  const [howToReachSummary, setHowToReachSummary] = useState({ with_us: 0, direct_palitana: 0 });
+  const [summary, setSummary] = useState({ totalRecords: 0, twoDaysCount: 0, fourDaysCount: 0 });
+  const [typeSummary, setTypeSummary] = useState({
+    howToReachPalitana: { with_us: 0, direct_palitana: 0 },
+    typeOfVaiyavach: { spot: 0, roamming: 0, chaityavandan: 0 }
+  });
 
-  // Fetch yatriks from backend with server-side filtering, sorting, pagination
-  const fetchYatriks = async () => {
+  const DATE_FIELDS = ['dob', 'createdAt', 'updatedAt'];
+
+  // Fetch vaiyavachis from backend with server-side filtering, sorting, pagination
+  const fetchVaiyavachis = async () => {
     setLoading(true);
     try {
+      // Build params, handling date fields differently
+      const filterParams = Object.fromEntries(
+        columnFilters.map(filter => {
+          if (DATE_FIELDS.includes(filter.id) && filter.value) {
+            // Try to parse as date, send as is (exact match)
+            return [filter.id, filter.value];
+          }
+          return [filter.id, filter.value];
+        })
+      );
       const params = {
         page: pagination.pageIndex + 1,
         limit: pagination.pageSize,
         search: globalFilter,
-        sortBy: sorting[0]?.id || 'yatrikNo',
+        sortBy: sorting[0]?.id || 'vaiyavachNo',
         order: sorting[0]?.desc ? 'desc' : 'asc',
-        ...Object.fromEntries(columnFilters.map(filter => [filter.id, filter.value])),
+        ...filterParams,
       };
-      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/yatriks/getallyatrik`, { params });
-      setYatriks(res.data.yatriks || []);
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/vaiyavach/getvaiyavchi`, { params });
+      setVaiyavachis(res.data.vaiyavachis || []);
       setRowCount(res.data.total || 0);
     } catch (error) {
-      setSnackbar({ open: true, message: 'Failed to fetch yatriks', severity: 'error' });
-      setYatriks([]);
+      setSnackbar({ open: true, message: 'Failed to fetch vaiyavachis', severity: 'error' });
+      setVaiyavachis([]);
       setRowCount(0);
     }
     setLoading(false);
   };
 
-  // Fetch howToReachPalitana summary
-  const fetchHowToReachSummary = async () => {
+  // Fetch summary
+  const fetchSummary = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/yatriks/howtoreach-summary`);
-      setHowToReachSummary(res.data || { with_us: 0, direct_palitana: 0 });
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/vaiyavach/vaiyavachisummary`);
+      setSummary(res.data || { totalRecords: 0, twoDaysCount: 0, fourDaysCount: 0 });
     } catch (error) {
-      setHowToReachSummary({ with_us: 0, direct_palitana: 0 });
+      setSummary({ totalRecords: 0, twoDaysCount: 0, fourDaysCount: 0 });
+    }
+  };
+
+  // Fetch type summary
+  const fetchTypeSummary = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/vaiyavach/type-summary`);
+      setTypeSummary(res.data || {
+        howToReachPalitana: { with_us: 0, direct_palitana: 0 },
+        typeOfVaiyavach: { spot: 0, roamming: 0, chaityavandan: 0 }
+      });
+    } catch (error) {
+      setTypeSummary({
+        howToReachPalitana: { with_us: 0, direct_palitana: 0 },
+        typeOfVaiyavach: { spot: 0, roamming: 0, chaityavandan: 0 }
+      });
     }
   };
 
   useEffect(() => {
-    fetchYatriks();
+    fetchVaiyavachis();
     // eslint-disable-next-line
   }, [pagination, sorting, globalFilter, columnFilters]);
 
   useEffect(() => {
-    fetchHowToReachSummary();
+    fetchSummary();
+    fetchTypeSummary();
   }, []);
 
   const columns = useMemo(
     () => [
-      { accessorKey: 'yatrikNo', header: 'Yatrik No', enableColumnFilter: true },
+      { accessorKey: 'vaiyavachNo', header: 'Vaiyavach No', enableColumnFilter: true },
       {
-        accessorKey: 'yatrikPhoto',
-        header: 'Yatrik Photo',
+        accessorKey: 'vaiyavachiImage',
+        header: 'Vaiyavachi Photo',
         enableColumnFilter: false,
         Cell: ({ cell }) => cell.getValue() ? (
           <a href={cell.getValue()} target="_blank" rel="noopener noreferrer">
-            <img src={cell.getValue()} alt="Yatrik" style={{ height: 60, borderRadius: 6 }} />
+            <img src={cell.getValue()} alt="Vaiyavachi" style={{ height: 60, borderRadius: 6 }} />
           </a>
         ) : null,
       },
@@ -95,59 +130,39 @@ const Yatra2025ManagementPage = () => {
       { accessorKey: 'relation', header: 'Relation', enableColumnFilter: true },
       { accessorKey: 'familyMemberWANumber', header: 'Family Member WA Number', enableColumnFilter: true },
       { accessorKey: 'emergencyNumber', header: 'Emergency Number', enableColumnFilter: true },
-      {
-        accessorKey: 'is7YatraDoneEarlier',
-        header: 'is7YatraDoneEarlier',
-        enableColumnFilter: true,
-        Cell: ({ cell }) => String(cell.getValue()),
-        filterFn: (row, id, filterValue) => {
-          const val = String(row.getValue(id)).toLowerCase();
-          const filter = String(filterValue).toLowerCase();
-          return val === filter;
-        },
-      },
-      { accessorKey: 'earlier7YatraCounts', header: 'Earlier 7 Yatra Counts', enableColumnFilter: true },
+      { accessorKey: 'is7YatraDoneEarlier', header: 'is7YatraDoneEarlier', enableColumnFilter: true },
+      { accessorKey: 'haveYouDoneVaiyavachEarlier', header: 'Done Vaiyavach Earlier', enableColumnFilter: true },
       { accessorKey: 'howToReachPalitana', header: 'How To Reach Palitana', enableColumnFilter: true },
-      {
-        accessorKey: 'yatrikConfirmation',
-        header: 'Yatrik Confirmation',
-        enableColumnFilter: true,
-        Cell: ({ cell }) => String(cell.getValue()),
-        filterFn: (row, id, filterValue) => {
-          const val = String(row.getValue(id)).toLowerCase();
-          const filter = String(filterValue).toLowerCase();
-          return val === filter;
-        },
-      },
-      {
-        accessorKey: 'familyConfirmation',
-        header: 'Family Confirmation',
-        enableColumnFilter: true,
-        Cell: ({ cell }) => String(cell.getValue()),
-        filterFn: (row, id, filterValue) => {
-          const val = String(row.getValue(id)).toLowerCase();
-          const filter = String(filterValue).toLowerCase();
-          return val === filter;
-        },
-      },
+      { accessorKey: 'howManyDaysJoin', header: 'How Many Days Join', enableColumnFilter: true },
+      { accessorKey: 'typeOfVaiyavach', header: 'Type Of Vaiyavach', enableColumnFilter: true },
+      { accessorKey: 'valueOfVaiyavach', header: 'Value Of Vaiyavach', enableColumnFilter: true },
+      { accessorKey: 'vaiyavachiConfirmation', header: 'Vaiyavachi Confirmation', enableColumnFilter: true },
+      { accessorKey: 'familyConfirmation', header: 'Family Confirmation', enableColumnFilter: true },
       { accessorKey: 'transactionNumber', header: 'Transaction No', enableColumnFilter: true },
-      { accessorKey: 'razorpay_order_id', header: 'Razorpay Order ID', enableColumnFilter: true },
-      { accessorKey: 'razorpay_signature', header: 'Razorpay Signature', enableColumnFilter: true },
+      { accessorKey: 'isPaid', header: 'Is Paid', enableColumnFilter: true },
+      { accessorKey: 'paymentLink', header: 'Payment Link', enableColumnFilter: false,
+        Cell: ({ cell, row }) => {
+          const link = cell.getValue();
+          return link ? (
+            <a href={link} target="_blank" rel="noopener noreferrer">Link</a>
+          ) : null;
+        },
+      },
     ],
     []
   );
 
   const handleExcelDownload = () => {
-    const data = yatriks.map(({ _id, __v, ...rest }) => rest);
+    const data = vaiyavachis.map(({ _id, __v, ...rest }) => rest);
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data);
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Yatriks');
-    XLSX.writeFile(workbook, '7yatra2025_yatriks.xlsx');
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Vaiyavachis');
+    XLSX.writeFile(workbook, '7yatra2025_vaiyavachis.xlsx');
   };
 
   const table = useMaterialReactTable({
     columns,
-    data: yatriks,
+    data: vaiyavachis,
     initialState: { density: 'compact' },
     manualPagination: true,
     manualSorting: true,
@@ -175,11 +190,11 @@ const Yatra2025ManagementPage = () => {
       sx: { background: '#fffbe6' },
     },
     muiTableHeadCellProps: ({ column }) =>
-      column.id === 'yatrikNo'
+      column.id === 'vaiyavachNo'
         ? { sx: { color: '#6d4c00', fontWeight: 'bold', position: 'sticky', left: 0, zIndex: 2 } }
         : { sx: { color: '#6d4c00', fontWeight: 'bold' } },
     muiTableBodyCellProps: ({ column }) =>
-      column.id === 'yatrikNo'
+      column.id === 'vaiyavachNo'
         ? { sx: { color: '#4e3c0a', position: 'sticky', left: 0, zIndex: 1 } }
         : { sx: { color: '#4e3c0a' } },
   });
@@ -189,16 +204,28 @@ const Yatra2025ManagementPage = () => {
       <Navbar />
       <div className="rssmu-registration-management-main">
         <Typography variant="h4" gutterBottom sx={{ color: '#6d4c00', fontWeight: 'bold', textAlign: 'center' }}>
-          7 Yatra 2025 Management
+          7 Yatra 2025 Vaiyavach Management
         </Typography>
         <div className="vaiyavach-summary-grid">
           <div className="vaiyavach-summary-card">
             <span className="label">With Us</span>
-            <span className="value">{howToReachSummary.with_us}</span>
+            <span className="value">{typeSummary.howToReachPalitana.with_us}</span>
           </div>
           <div className="vaiyavach-summary-card">
             <span className="label">Direct Palitana</span>
-            <span className="value">{howToReachSummary.direct_palitana}</span>
+            <span className="value">{typeSummary.howToReachPalitana.direct_palitana}</span>
+          </div>
+          <div className="vaiyavach-summary-card">
+            <span className="label">Spot</span>
+            <span className="value">{typeSummary.typeOfVaiyavach.spot}</span>
+          </div>
+          <div className="vaiyavach-summary-card">
+            <span className="label">Roamming</span>
+            <span className="value">{typeSummary.typeOfVaiyavach.roamming}</span>
+          </div>
+          <div className="vaiyavach-summary-card">
+            <span className="label">Chaityavandan</span>
+            <span className="value">{typeSummary.typeOfVaiyavach.chaityavandan}</span>
           </div>
         </div>
         <div className="rssmu-registration-management-content">
@@ -220,4 +247,4 @@ const Yatra2025ManagementPage = () => {
   );
 };
 
-export default Yatra2025ManagementPage; 
+export default Yatra2025VaiyavachManagementPage; 

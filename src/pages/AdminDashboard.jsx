@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './AdminDashboard.css';
 import Yatra2025ManagementPage from './7Yatra2025ManagementPage';
+import PaymentManagementPage from './PaymentManagementPage';
+import Yatra2025VaiyavachManagementPage from './7Yatra2025VaiyavachManagementPage';
 
 // Curated color palette for charts, matching the UI
 const CHART_COLORS = [
@@ -31,9 +33,13 @@ const AdminDashboard = () => {
   const [donationSummary, setDonationSummary] = useState({ totalAmount: 0, byCategory: [] });
   const [registrationSummary, setRegistrationSummary] = useState({ totalCount: 0, byCategory: [] });
   const [yatraSummary, setYatraSummary] = useState({ totalRecords: 0, oldCategoryCount: 0, newCategoryCount: 0 });
+  const [paymentSummary, setPaymentSummary] = useState({ paid: 0, unpaid: 0 });
+  const [vaiyavachSummary, setVaiyavachSummary] = useState({ totalRecords: 0, twoDaysCount: 0, fourDaysCount: 0 });
   const [loadingDonations, setLoadingDonations] = useState(true);
   const [loadingRegistrations, setLoadingRegistrations] = useState(true);
   const [loadingYatra, setLoadingYatra] = useState(true);
+  const [loadingPayments, setLoadingPayments] = useState(true);
+  const [loadingVaiyavach, setLoadingVaiyavach] = useState(true);
   const navigate = useNavigate();
   const username = localStorage.getItem('username') || 'Admin';
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -72,9 +78,33 @@ const AdminDashboard = () => {
       setLoadingYatra(false);
     };
 
+    const fetchPaymentSummary = async () => {
+      setLoadingPayments(true);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/yatriks/payment-status-summary`);
+        setPaymentSummary(res.data.yatrik || { paid: 0, unpaid: 0 });
+      } catch (error) {
+        setPaymentSummary({ paid: 0, unpaid: 0 });
+      }
+      setLoadingPayments(false);
+    };
+
+    const fetchVaiyavachSummary = async () => {
+      setLoadingVaiyavach(true);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/vaiyavach/vaiyavachisummary`);
+        setVaiyavachSummary(res.data);
+      } catch (error) {
+        setVaiyavachSummary({ totalRecords: 0, twoDaysCount: 0, fourDaysCount: 0 });
+      }
+      setLoadingVaiyavach(false);
+    };
+
     fetchDonationSummary();
     fetchRegistrationSummary();
     fetchYatraSummary();
+    fetchPaymentSummary();
+    fetchVaiyavachSummary();
   }, []);
 
   // Prepare donut data for donations
@@ -91,6 +121,19 @@ const AdminDashboard = () => {
   const yatraDonutData = [
     { category: 'New Yatrik', count: yatraSummary.newCategoryCount },
     { category: 'Old Yatrik', count: yatraSummary.oldCategoryCount },
+  ];
+
+  // Prepare donut data for Payments (dynamic by status)
+  const paymentsDonutData = Object.entries(paymentSummary).map(([status, count]) => ({
+    category: status.charAt(0).toUpperCase() + status.slice(1),
+    count
+  }));
+  const paymentsTotal = Object.values(paymentSummary).reduce((sum, v) => sum + v, 0);
+
+  // Prepare donut data for 7 Yatra Vaiyavach
+  const vaiyavachDonutData = [
+    { category: '2 Days', count: vaiyavachSummary.twoDaysCount },
+    { category: '4 Days', count: vaiyavachSummary.fourDaysCount },
   ];
 
   const donutCharts = [
@@ -115,7 +158,7 @@ const AdminDashboard = () => {
       totalSuffix: ''
     },
     {
-      label: '7 Yatra',
+      label: '7 Yatra Yatriks',
       key: 'yatra',
       data: yatraDonutData,
       dataKey: 'count',
@@ -123,7 +166,27 @@ const AdminDashboard = () => {
       total: yatraSummary.totalRecords,
       knowMore: () => navigate('/admin/7yatra2025management'),
       totalSuffix: ''
-    }
+    },
+    {
+      label: '7 Yatra Vaiyavachis',
+      key: 'vaiyavach',
+      data: vaiyavachDonutData,
+      dataKey: 'count',
+      nameKey: 'category',
+      total: vaiyavachSummary.totalRecords,
+      knowMore: () => navigate('/admin/7yatra2025vaiyavachmanagement'),
+      totalSuffix: ''
+    },
+    {
+      label: 'Payments',
+      key: 'payments',
+      data: paymentsDonutData,
+      dataKey: 'count',
+      nameKey: 'category',
+      total: paymentsTotal,
+      knowMore: () => navigate('/admin/paymentmanagement'),
+      totalSuffix: ''
+    },
   ].map((item, idx) => (
     <div className="donut-chart-box" key={item.key}>
       <ResponsiveContainer width="100%" height={200}>
@@ -184,7 +247,7 @@ const AdminDashboard = () => {
         <div className="admin-main-content">
           <Typography variant="h3" className="welcome-title">Welcome {username.toLowerCase()},</Typography>
           <div className="donut-row">
-            {loadingDonations || loadingRegistrations || loadingYatra ? <CircularProgress /> : donutCharts}
+            {loadingDonations || loadingRegistrations || loadingYatra || loadingPayments || loadingVaiyavach ? <CircularProgress /> : donutCharts}
           </div>
         </div>
       </div>

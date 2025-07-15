@@ -1,5 +1,6 @@
 const Yatrik = require('../models/7jatrayatrik-25');
 const Payment = require('../models/Payment');
+const Vaiyavachi = require('../models/7jatravaiyavachi-25');
 const path = require('path');
 const multer = require('multer');
 const Razorpay = require('razorpay');
@@ -128,12 +129,13 @@ exports.createPaymentLink = [
         key_id: process.env.RAZORPAY_KEY_ID,
         key_secret: process.env.RAZORPAY_KEY_SECRET,
       });
+      const expireBy = Math.floor(Date.now() / 1000) + 16 * 60; // 16 minutes from now (buffer for server time skew)
       const paymentLink = await razorpay.paymentLink.create({
         amount: 50000, // Rs. 500.00 in paise
         currency: 'INR',
         accept_partial: false,
-        description: '7 Yatra 2025 Registration',
-        customer: {
+        description: 'Donation for 7 Yatra',
+        customer: { 
           name,
           email: emailAddress,
           contact: mobileNumber,
@@ -145,6 +147,10 @@ exports.createPaymentLink = [
         callback_url: process.env.PAYMENT_CALLBACK_URL, // e.g. https://yourdomain.com/payment-redirect
         callback_method: 'get',
         reference_id: newYatrik._id.toString(),
+        expire_by: expireBy, // <-- 16 minute expiry (buffered)
+        notes: {
+          yatrikNo: newYatrik.yatrikNo
+        },
       });
       // Store Payment record
       newYatrik.paymentLink = paymentLink.short_url;
@@ -380,3 +386,123 @@ exports.getYatrikSummary = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// New summary endpoint for howToReachPalitana (with_us, direct_palitana)
+exports.getYatrikHowToReachSummary = async (req, res) => {
+    try {
+        const withUsCount = await Yatrik.countDocuments({ howToReachPalitana: 'with_us' });
+        const directPalitanaCount = await Yatrik.countDocuments({ howToReachPalitana: 'direct_palitana' });
+        res.status(200).json({
+            with_us: withUsCount,
+            direct_palitana: directPalitanaCount
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Get all Payment records with pagination, search, sorting, and filtering
+exports.getAllPayments = async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 10,
+            sortBy = 'createdAt',
+            order = 'desc',
+            search = '',
+            ...filters
+        } = req.query;
+
+        let filter = {};
+        // Special handling for mobileNumber filter
+        let mobileNumberFilter = null;
+        if (filters.mobileNumber) {
+            mobileNumberFilter = filters.mobileNumber;
+            delete filters.mobileNumber;
+        }
+        // Build filter for each field
+        Object.keys(filters).forEach(key => {
+            if (filters[key] && !['page', 'limit', 'sortBy', 'order', 'search'].includes(key)) {
+                filter[key] = { $regex: filters[key], $options: 'i' }; // Case-insensitive search
+            }
+        });
+
+        // Global search
+        if (search) {
+            filter.$or = [
+                { yatrikNo: { $regex: search, $options: 'i' } },
+                { vaiyavachiNo: { $regex: search, $options: 'i' } },
+                { paymentLinkId: { $regex: search, $options: 'i' } },
+                { orderId: { $regex: search, $options: 'i' } },
+                { paymentId: { $regex: search, $options: 'i' } },
+                { status: { $regex: search, $options: 'i' } },
+                { link: { $regex: search, $options: 'i' } },
+                { currency: { $regex: search, $options: 'i' } },
+                { userAgent: { $regex: search, $options: 'i' } },
+                { ip: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        // If filtering by mobileNumber, find matching yatrikNo and vaiyavachNo
+        let yatrikNoSet = null;
+        let vaiyavachNoSet = null;
+        if (mobileNumberFilter) {
+            const yatriks = await Yatrik.find({ mobileNumber: { $regex: mobileNumberFilter, $options: 'i' } }, 'yatrikNo');
+            const vaiyavachis = await Vaiyavachi.find({ mobileNumber: { $regex: mobileNumberFilter, $options: 'i' } }, 'vaiyavachNo');
+            yatrikNoSet = new Set(yatriks.map(y => y.yatrikNo));
+            vaiyavachNoSet = new Set(vaiyavachis.map(v => v.vaiyavachNo));
+            filter.$or = [
+                { yatrikNo: { $in: Array.from(yatrikNoSet) } },
+                { vaiyavachiNo: { $in: Array.from(vaiyavachNoSet) } }
+            ];
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const total = await Payment.countDocuments(filter);
+        const payments = await Payment.find(filter)
+            .sort({ [sortBy]: order === 'asc' ? 1 : -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        // Attach mobileNumber to each payment
+        const yatrikNos = payments.filter(p => p.yatrikNo).map(p => p.yatrikNo);
+        const vaiyavachNos = payments.filter(p => p.vaiyavachiNo).map(p => p.vaiyavachiNo);
+        const yatrikMap = {};
+        const vaiyavachMap = {};
+        if (yatrikNos.length > 0) {
+            const yatriks = await Yatrik.find({ yatrikNo: { $in: yatrikNos } }, 'yatrikNo mobileNumber');
+            yatriks.forEach(y => { yatrikMap[y.yatrikNo] = y.mobileNumber; });
+        }
+        if (vaiyavachNos.length > 0) {
+            const vaiyavachis = await Vaiyavachi.find({ vaiyavachNo: { $in: vaiyavachNos } }, 'vaiyavachNo mobileNumber');
+            vaiyavachis.forEach(v => { vaiyavachMap[v.vaiyavachNo] = v.mobileNumber; });
+        }
+        const paymentsWithMobile = payments.map(p => {
+            let mobileNumber = '';
+            if (p.yatrikNo && yatrikMap[p.yatrikNo]) mobileNumber = yatrikMap[p.yatrikNo];
+            else if (p.vaiyavachiNo && vaiyavachMap[p.vaiyavachiNo]) mobileNumber = vaiyavachMap[p.vaiyavachiNo];
+            return { ...p.toObject(), mobileNumber };
+        });
+
+        res.json({ payments: paymentsWithMobile, total });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Get dynamic summary of Payment records by status (using Payment collection)
+exports.getYatrikPaymentStatusSummary = async (req, res) => {
+    try {
+        const statusCounts = await Payment.aggregate([
+            { $group: { _id: "$status", count: { $sum: 1 } } }
+        ]);
+        const summary = {};
+        statusCounts.forEach(item => {
+            summary[item._id] = item.count;
+        });
+        res.status(200).json({ yatrik: summary });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+

@@ -131,11 +131,12 @@ exports.createPaymentLink = [
         key_id: process.env.RAZORPAY_KEY_ID,
         key_secret: process.env.RAZORPAY_KEY_SECRET,
       });
+      const expireBy = Math.floor(Date.now() / 1000) + 16 * 60; // 16 minutes from now (buffer for server time skew)
       const paymentLink = await razorpay.paymentLink.create({
         amount: 50000, // Rs. 500.00 in paise
         currency: 'INR',
         accept_partial: false,
-        description: '7 Vaiyavach 2025 Registration vaiyavachi',
+        description: 'Donation for 7 Yatra',
         customer: {
           name,
           email: emailAddress,
@@ -148,6 +149,10 @@ exports.createPaymentLink = [
         callback_url: process.env.PAYMENT_CALLBACK_URL, // e.g. https://yourdomain.com/payment-redirect
         callback_method: 'get',
         reference_id: newVaiyavachi._id.toString(),
+        expire_by: expireBy, // <-- 16 minute expiry (buffered)
+        notes: {
+          vaiyavachNo: newVaiyavachi.vaiyavachNo
+        },
       });
       // Store Payment record
       // console.log(paymentLink)
@@ -280,13 +285,14 @@ exports.getAllVaiyavachis = async (req, res) => {
         // Build filter for each field
         Object.keys(filters).forEach(key => {
             if (filters[key] && !['page', 'limit', 'sortBy', 'order', 'search'].includes(key)) {
-                filter[key] = { $regex: filters[key], $options: 'i' };
+                filter[key] = { $regex: filters[key], $options: 'i' }; // Case-insensitive search
             }
         });
 
         // Global search
         if (search) {
             filter.$or = [
+                { vaiyavachNo: { $regex: search, $options: 'i' } },
                 { name: { $regex: search, $options: 'i' } },
                 { mobileNumber: { $regex: search, $options: 'i' } },
                 { whatsappNumber: { $regex: search, $options: 'i' } },
@@ -357,12 +363,12 @@ exports.deleteVaiyavachi = async (req, res) => {
 exports.getVaiyavachiSummary = async (req, res) => {
     try {
         const totalRecords = await Vaiyavachi.countDocuments();
-        const doneEarlierCount = await Vaiyavachi.countDocuments({ is7YatraDoneEarlier: 'yes' });
-        const notDoneEarlierCount = await Vaiyavachi.countDocuments({ is7YatraDoneEarlier: 'no' });
+        const twoDaysCount = await Vaiyavachi.countDocuments({ howManyDaysJoin: '2' });
+        const fourDaysCount = await Vaiyavachi.countDocuments({ howManyDaysJoin: '4' });
         res.status(200).json({
             totalRecords,
-            doneEarlierCount,
-            notDoneEarlierCount
+            twoDaysCount,
+            fourDaysCount
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -392,4 +398,32 @@ exports.getTypeValueCounts = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}; 
+};
+
+// New summary endpoint for howToReachPalitana and typeOfVaiyavach
+exports.getVaiyavachiTypeSummary = async (req, res) => {
+    try {
+        // How to reach Palitana
+        const withUsCount = await Vaiyavachi.countDocuments({ howToReachPalitana: 'with_us' });
+        const directPalitanaCount = await Vaiyavachi.countDocuments({ howToReachPalitana: 'direct_palitana' });
+        // Type of Vaiyavach
+        const spotCount = await Vaiyavachi.countDocuments({ typeOfVaiyavach: 'spot' });
+        const roammingCount = await Vaiyavachi.countDocuments({ typeOfVaiyavach: 'roamming' });
+        const chaityavandanCount = await Vaiyavachi.countDocuments({ typeOfVaiyavach: 'chaityavandan' });
+        res.status(200).json({
+            howToReachPalitana: {
+                with_us: withUsCount,
+                direct_palitana: directPalitanaCount
+            },
+            typeOfVaiyavach: {
+                spot: spotCount,
+                roamming: roammingCount,
+                chaityavandan: chaityavandanCount
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Get summary of paid and unpaid Vaiyavach records

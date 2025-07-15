@@ -1,0 +1,87 @@
+/* Base styles for summary cards grid */
+.vaiyavach-summary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.vaiyavach-summary-card {
+  min-width: 140px;
+  flex: 1 1 140px;
+  max-width: 220px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 18px 10px;
+  text-align: center;
+  margin: 0 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vaiyavach-summary-card .label {
+  font-size: 1rem;
+  color: #6d4c00;
+  margin-bottom: 4px;
+}
+
+.vaiyavach-summary-card .value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #964b00;
+}
+
+/* Mobile: 2 cards per row */
+@media (max-width: 575.98px) {
+  .vaiyavach-summary-grid {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .vaiyavach-summary-card {
+    flex: 1 1 45%;
+    max-width: 10%;
+    margin: 0 1%;
+  }
+}
+
+/* Small tablets: 2 cards per row */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .vaiyavach-summary-card {
+    flex: 1 1 45%;
+    max-width: 10%;
+    margin: 0 1%;
+  }
+}
+
+/* Tablets: 3 cards per row */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .vaiyavach-summary-card {
+    flex: 1 1 30%;
+    max-width: 10%;
+    margin: 0 1%;
+  }
+}
+
+/* Large screens: 5 cards per row
+@media (min-width: 992px) {
+  .vaiyavach-summary-card {
+    flex: 1 1 18%;
+    max-width: 10%;
+    margin: 0 0.5%;
+  }
+}  */
+
+.registration-table .MuiTableHead-root {
+  background: unset;
+}
+.registration-table .MuiTableCell-head {
+  background: unset;
+}
+.registration-table .MuiTable-root {
+  background: unset;
+}

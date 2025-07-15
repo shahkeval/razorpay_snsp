@@ -28,6 +28,9 @@ router.post('/razorpay-webhook', vaiyavachiController.razorpayWebhook);
 router.get('/verifyvaiyavachpayment', vaiyavachiController.verifyPayment);
 
 router.get('/type-value-counts', vaiyavachiController.getTypeValueCounts);
+// Get Vaiyavachi type summary (howToReachPalitana and typeOfVaiyavach)
+router.get('/type-summary', vaiyavachiController.getVaiyavachiTypeSummary);
+
 
 module.exports = router;
 

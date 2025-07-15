@@ -241,8 +241,8 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
       sessionStorage.setItem('vaiyavachNo', vaiyavachNo);
       sessionStorage.setItem('orderId', orderId);
       console.log(paymentLink)
-      window.open(paymentLink, '_blank');
-      //window.location.href = paymentLink;
+      // window.open(paymentLink, '_blank');
+      window.location.href = paymentLink;
     } catch (err) {
       console.error('Payment link error:', err);
       let errorMsg = 'Failed to initiate payment. Please try again.';

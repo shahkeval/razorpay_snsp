@@ -237,8 +237,8 @@ const YatrikForm2025 = ({ event, onComplete }) => {
       const { paymentLink, yatrikNo, orderId } = res.data;
       sessionStorage.setItem('yatrikNo', yatrikNo);
       sessionStorage.setItem('orderId', orderId);
-      window.open(paymentLink, '_blank');
-      // window.location.href = paymentLink;
+      // window.open(paymentLink, '_blank');
+      window.location.href = paymentLink;
     } catch (err) {
       alert('Failed to initiate payment. Please try again.');
       setIsSubmittingRegistration(false);
@@ -350,7 +350,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
             <input
               type="tel"
               id="mobileNumber"
-              name="mobileNumber"
+              name="phone"
               value={yatraRegistrationData.phone}
               onChange={handleYatraRegistrationChange}
               required

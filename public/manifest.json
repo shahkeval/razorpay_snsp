@@ -4,27 +4,27 @@
   "description": "Official PWA for Namo Namah Shashwat Parivar – A non-profit Jain organization.",
   "icons": [
     {
-      "src": "icons/icon-16x16.png",
+      "src": "logo.png",
       "sizes": "16x16",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-32x32.png",
+      "src": "logo.png",
       "sizes": "32x32",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-64x64.png",
+      "src": "logo.png",
       "sizes": "64x64",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-192x192.png",
+      "src": "logo.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-512x512.png",
+      "src": "logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }
