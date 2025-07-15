@@ -47,7 +47,7 @@ const PaymentManagementPage = () => {
         order: sorting[0]?.desc ? 'desc' : 'asc',
         ...filterParams,
       };
-      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/yatriks/allpayments`, { params });
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/yatriks/allpayments`, { params });
       setPayments(res.data.payments || []);
       setRowCount(res.data.total || 0);
     } catch (error) {
@@ -61,7 +61,7 @@ const PaymentManagementPage = () => {
   // Fetch summary
   const fetchSummary = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/yatriks/payment-status-summary`);
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/yatriks/payment-status-summary`);
       // Accept both {yatrik: {paid, unpaid}} and {paid, unpaid}
       if (res.data.yatrik) {
         setSummary(res.data.yatrik);

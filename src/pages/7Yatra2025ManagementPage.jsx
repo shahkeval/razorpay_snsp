@@ -50,7 +50,7 @@ const Yatra2025ManagementPage = () => {
   // Fetch howToReachPalitana summary
   const fetchHowToReachSummary = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/yatriks/howtoreach-summary`);
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/yatriks/howtoreach-summary`);
       setHowToReachSummary(res.data || { with_us: 0, direct_palitana: 0 });
     } catch (error) {
       setHowToReachSummary({ with_us: 0, direct_palitana: 0 });

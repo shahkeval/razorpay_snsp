@@ -54,7 +54,7 @@ const Yatra2025VaiyavachManagementPage = () => {
         order: sorting[0]?.desc ? 'desc' : 'asc',
         ...filterParams,
       };
-      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/vaiyavach/getvaiyavchi`, { params });
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/vaiyavach/getvaiyavchi`, { params });
       setVaiyavachis(res.data.vaiyavachis || []);
       setRowCount(res.data.total || 0);
     } catch (error) {
@@ -68,7 +68,7 @@ const Yatra2025VaiyavachManagementPage = () => {
   // Fetch summary
   const fetchSummary = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/vaiyavach/vaiyavachisummary`);
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/vaiyavach/vaiyavachisummary`);
       setSummary(res.data || { totalRecords: 0, twoDaysCount: 0, fourDaysCount: 0 });
     } catch (error) {
       setSummary({ totalRecords: 0, twoDaysCount: 0, fourDaysCount: 0 });
@@ -78,7 +78,7 @@ const Yatra2025VaiyavachManagementPage = () => {
   // Fetch type summary
   const fetchTypeSummary = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/api/vaiyavach/type-summary`);
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/vaiyavach/type-summary`);
       setTypeSummary(res.data || {
         howToReachPalitana: { with_us: 0, direct_palitana: 0 },
         typeOfVaiyavach: { spot: 0, roamming: 0, chaityavandan: 0 }

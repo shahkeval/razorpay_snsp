@@ -235,7 +235,7 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
       formData.append("vaiyavachiConfirmation", vaiyavachForm.vaiyavachiConfirmation);
       formData.append("familyConfirmation", vaiyavachForm.familyConfirmation);
       // Send to backend to create payment link
-      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
       const res = await axios.post(`${API_BASE_URL}/api/vaiyavach/createvaiyavachpayment`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       const { paymentLink, vaiyavachNo, orderId } = res.data;
       sessionStorage.setItem('vaiyavachNo', vaiyavachNo);
