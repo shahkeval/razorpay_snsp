@@ -9,7 +9,7 @@ const fs = require('fs');
 // Multer storage config for vaiyavachi image
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../../public/7-jatra-vaiyavach'));
+        cb(null, path.join(__dirname, '../upload/7_jatra_viyavach_2025'));
     },
     filename: function (req, file, cb) {
         const ext = path.extname(file.originalname);
@@ -31,7 +31,7 @@ async function saveBase64Image(base64String, folderPath, prefix = 'VAIYAVACHI') 
   const filename = `${prefix}-${Date.now()}.${ext}`;
   const filePath = path.join(folderPath, filename);
   await fs.promises.writeFile(filePath, buffer);
-  return `/7-jatra-vaiyavach/${filename}`;
+  return `/uploads/vaiyavach/${filename}`;
 }
 
 // Create a new Vaiyavachi record with image upload (multer only)
@@ -39,7 +39,7 @@ exports.createVaiyavachi = [
     upload.single('vaiyavachiImage'),
     async (req, res) => {
         try {
-            const vaiyavachiImagePath = req.file ? `/7-jatra-vaiyavach/${req.file.filename}` : '';
+            const vaiyavachiImagePath = req.file ? `/uploads/vaiyavach/${req.file.filename}` : '';
             const body = req.body;
             const vaiyavachi = new Vaiyavachi({
                 ...body,
@@ -101,14 +101,14 @@ exports.createPaymentLink = [
       // Now get vaiyavachNo
       const vaiyavachNo = newVaiyavachi.vaiyavachNo;
       let vaiyavachiImagePath = '';
-      const folderPath = path.join(__dirname, '../../public/7-jatra-vaiyavach');
+      const folderPath = path.join(__dirname, '../upload/7_jatra_viyavach_2025');
       if (req.file) {
         // Rename uploaded file to match vaiyavachNo
         const ext = path.extname(req.file.originalname);
         const newFileName = `${vaiyavachNo}${ext}`;
         const newFilePath = path.join(folderPath, newFileName);
         await fs.promises.rename(req.file.path, newFilePath);
-        vaiyavachiImagePath = `/7-jatra-vaiyavach/${newFileName}`;
+        vaiyavachiImagePath = `/uploads/vaiyavach/${newFileName}`;
       } else if (vaiyavachiImage && vaiyavachiImage.startsWith('data:image/')) {
         // Save base64 image with vaiyavachNo
         const matches = vaiyavachiImage.match(/^data:(.+);base64,(.+)$/);
@@ -118,7 +118,7 @@ exports.createPaymentLink = [
         const fileName = `${vaiyavachNo}.${ext}`;
         const filePath = path.join(folderPath, fileName);
         await fs.promises.writeFile(filePath, buffer);
-        vaiyavachiImagePath = `/7-jatra-vaiyavach/${fileName}`;
+        vaiyavachiImagePath = `/uploads/vaiyavach/${fileName}`;
       }
       // Update document with image path
       if (vaiyavachiImagePath) {
@@ -133,7 +133,7 @@ exports.createPaymentLink = [
       });
       const expireBy = Math.floor(Date.now() / 1000) + 16 * 60; // 16 minutes from now (buffer for server time skew)
       const paymentLink = await razorpay.paymentLink.create({
-        amount: 50000, // Rs. 500.00 in paise
+        amount: 100, // Rs. 500.00 in paise
         currency: 'INR',
         accept_partial: false,
         description: 'Donation for 7 Yatra',

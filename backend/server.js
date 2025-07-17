@@ -4,16 +4,27 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const bodyParser = require('body-parser');
 const multer = require('multer');
+const path = require('path');
 
-// const rssmsuRoutes = require('./routes/rssmsu');
-
-// Load env vars
+// const rssmsuRoutes = require('./routes/rssmsu')
+// // Load env vars
 dotenv.config();
-
+console.log("MONGODB_URI:1", process.env.MONGODB_URI);
+ 
 // Connect to database
 connectDB();
+ 
+console.log("MONGODB_URI:2", process.env.MONGODB_URI);
+ 
+
 
 const app = express();
+
+// Serve yatrik uploads statically
+app.use('/uploads/yatrik', express.static(path.join(__dirname, 'upload/7_jatra_yatriks_2025')));
+
+// Serve vaiyavach uploads statically
+app.use('/uploads/vaiyavach', express.static(path.join(__dirname, 'upload/7_jatra_viyavach_2025')));
 
 // Body parser
 app.use(express.json({ limit: '10mb' }));

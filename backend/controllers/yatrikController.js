@@ -10,7 +10,7 @@ const fs = require('fs');
 // Multer storage config for yatrik photo
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../../public/7-jatra-yatrik'));
+        cb(null, path.join(__dirname, '../upload/7_jatra_yatriks_2025'));
     },
     filename: async function (req, file, cb) {
         try {
@@ -44,7 +44,7 @@ async function saveBase64Image(base64String, folderPath, prefix = 'YATRIK') {
   const filename = `${prefix}-${Date.now()}.${ext}`;
   const filePath = path.join(folderPath, filename);
   await fs.promises.writeFile(filePath, buffer);
-  return `/7-jatra-yatrik/${filename}`;
+  return `/uploads/yatrik/${filename}`;
 }
 
 // Multer with higher fieldSize for base64 in createPaymentLink
@@ -100,14 +100,14 @@ exports.createPaymentLink = [
       // Now get yatrikNo
       const yatrikNo = newYatrik.yatrikNo;
       let yatrikPhotoPath = '';
-      const folderPath = path.join(__dirname, '../../public/7-jatra-yatrik');
+      const folderPath = path.join(__dirname, '../upload/7_jatra_yatriks_2025');
       if (req.file) {
         // Rename uploaded file to match yatrikNo
         const ext = path.extname(req.file.originalname);
         const newFileName = `${yatrikNo}${ext}`;
         const newFilePath = path.join(folderPath, newFileName);
         await fs.promises.rename(req.file.path, newFilePath);
-        yatrikPhotoPath = `/7-jatra-yatrik/${newFileName}`;
+        yatrikPhotoPath = `/uploads/yatrik/${newFileName}`;
       } else if (yatrikPhoto && yatrikPhoto.startsWith('data:image/')) {
         // Save base64 image with yatrikNo
         const matches = yatrikPhoto.match(/^data:(.+);base64,(.+)$/);
@@ -117,7 +117,7 @@ exports.createPaymentLink = [
         const fileName = `${yatrikNo}.${ext}`;
         const filePath = path.join(folderPath, fileName);
         await fs.promises.writeFile(filePath, buffer);
-        yatrikPhotoPath = `/7-jatra-yatrik/${fileName}`;
+        yatrikPhotoPath = `/uploads/yatrik/${fileName}`;
       }
       // Update document with image path
       if (yatrikPhotoPath) {
@@ -210,37 +210,49 @@ exports.razorpayWebhook = async (req, res) => {
 // 3. Verify payment status (frontend polling after redirect)
 exports.verifyPayment = async (req, res) => {
   try {
+    console.log("1");
     const { yatrikNo, orderId } = req.query;
     let payment;
     if (orderId) {
       payment = await Payment.findOne({ orderId });
+      console.log("2");
     } else if (yatrikNo) {
       payment = await Payment.findOne({ yatrikNo });
+      console.log("3");
     }
     if (!payment) return res.status(404).json({ status: 'not_found' });
     if (payment.status === 'paid') {
       // Only update isPaid field in Yatrik collection
+      console.log("4");
       if (payment.yatrikNo) {
+        console.log("5");
         await Yatrik.updateOne(
           { yatrikNo: payment.yatrikNo },
           { isPaid: 'paid' }
         );
       }
+      console.log("6");
       return res.json({ status: 'paid' });
     }
     // If not paid, check Razorpay directly
+    console.log("7");
     let razorpayRes;
     try {
+      console.log("8");
       const razorpay = new Razorpay({
         key_id: process.env.RAZORPAY_KEY_ID,
         key_secret: process.env.RAZORPAY_KEY_SECRET,
       });
+      console.log("9");
       razorpayRes = await razorpay.paymentLink.fetch(orderId);
     } catch (err) {
+      console.log("10");
       return res.status(500).json({ status: 'error', message: 'Razorpay fetch failed' });
     }
+    console.log("11");
     if (razorpayRes.status === 'paid') {
       // Update existing Payment record with all details
+      console.log("12");
       payment.status = 'paid';
       payment.amount = '5000';
       payment.method = razorpayRes.payment ? razorpayRes.payment.method : payment.method;
@@ -254,16 +266,20 @@ exports.verifyPayment = async (req, res) => {
       await payment.save();
       // Only update isPaid field in Yatrik collection
       if (payment.yatrikNo) {
+        console.log("13");
         await Yatrik.updateOne(
           { yatrikNo: payment.yatrikNo },
           { isPaid: 'paid' }
         );
+        console.log("14");
       }
       return res.json({ status: 'paid' });
     }
+    console.log("15");
     // Not paid yet, return current status
     return res.json({ status: razorpayRes.status });
   } catch (error) {
+    console.log("16");
     res.status(500).json({ message: error.message });
   }
 };

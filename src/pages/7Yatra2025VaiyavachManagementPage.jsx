@@ -109,8 +109,8 @@ const Yatra2025VaiyavachManagementPage = () => {
         header: 'Vaiyavachi Photo',
         enableColumnFilter: false,
         Cell: ({ cell }) => cell.getValue() ? (
-          <a href={cell.getValue()} target="_blank" rel="noopener noreferrer">
-            <img src={cell.getValue()} alt="Vaiyavachi" style={{ height: 60, borderRadius: 6 }} />
+          <a href={process.env.REACT_APP_API_BASE_URL + cell.getValue()} target="_blank" rel="noopener noreferrer">
+            <img src={process.env.REACT_APP_API_BASE_URL + cell.getValue()} alt="Vaiyavachi" style={{ height: 60, borderRadius: 6 }} />
           </a>
         ) : null,
       },
