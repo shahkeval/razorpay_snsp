@@ -5,28 +5,28 @@ import imageCompression from 'browser-image-compression';
 const YatrikForm2025 = ({ event, onComplete }) => {
   // State
   const [yatraRegistrationData, setYatraRegistrationData] = useState({
-    fullName: "keval",
-    email: "shahkeval7383@gmail.com",
-    education: "demo ",
-    religiousEducation: "demo",
-    phone: "7383120787",
-    whatsappNumber: "1236545232",
-    address: "demo",
-    city: "Ahmedabad",
-    state: "GJ",
-    weight: "15",
-    height: "15",
+    fullName: "",
+    email: "",
+    education: "",
+    religiousEducation: "",
+    phone: "",
+    whatsappNumber: "",
+    address: "",
+    city: "",
+    state: "",
+    weight: "",
+    height: "",
     dateOfBirth: "",
     progress: 0,
-    familyMemberName: "kaushal",
-    familyMemberRelation: "father",
-    familyMemberWhatsapp: "1234567890",
-    emergencyNumber: "7894561230",
-    done7YatraEarlier: "yes",
-    howManyTimes: "2",
-    howToReachPalitana: "with_us",
-    yatrikConfirmation: "yes",
-    familyConfirmation: "yes",
+    familyMemberName: "",
+    familyMemberRelation: "",
+    familyMemberWhatsapp: "",
+    emergencyNumber: "",
+    done7YatraEarlier: "",
+    howManyTimes: "",
+    howToReachPalitana: "",
+    yatrikConfirmation: "",
+    familyConfirmation: "",
   });
   const [currentStep, setCurrentStep] = useState(1);
   const [yatrikPhotoPreview, setYatrikPhotoPreview] = useState(null);
@@ -329,7 +329,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
             />
           )}
           <div className="form-group">
-            <label htmlFor="yatrikName">Yatrik Name*--{yatraRegistrationData.fullName}</label>
+            <label htmlFor="yatrikName">Yatrik Name*</label>
             <input
               type="text"
               id="yatrikName"
