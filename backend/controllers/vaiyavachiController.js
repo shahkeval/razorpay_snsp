@@ -133,7 +133,7 @@ exports.createPaymentLink = [
       });
       const expireBy = Math.floor(Date.now() / 1000) + 16 * 60; // 16 minutes from now (buffer for server time skew)
       const paymentLink = await razorpay.paymentLink.create({
-        amount: 100, // Rs. 500.00 in paise
+        amount: 50000, // Rs. 500.00 in paise
         currency: 'INR',
         accept_partial: false,
         description: 'Donation for 7 Yatra',

@@ -22,7 +22,6 @@ const app = express();
 
 // Serve yatrik uploads statically
 app.use('/uploads/yatrik', express.static(path.join(__dirname, 'upload/7_jatra_yatriks_2025')));
-
 // Serve vaiyavach uploads statically
 app.use('/uploads/vaiyavach', express.static(path.join(__dirname, 'upload/7_jatra_viyavach_2025')));
 
