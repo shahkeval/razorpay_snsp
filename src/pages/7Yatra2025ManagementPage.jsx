@@ -130,9 +130,12 @@ const Yatra2025ManagementPage = () => {
           return val === filter;
         },
       },
-      { accessorKey: 'transactionNumber', header: 'Transaction No', enableColumnFilter: true },
-      { accessorKey: 'razorpay_order_id', header: 'Razorpay Order ID', enableColumnFilter: true },
-      { accessorKey: 'razorpay_signature', header: 'Razorpay Signature', enableColumnFilter: true },
+      { accessorKey: 'isPaid', header: 'Is Paid', enableColumnFilter: true },
+      { accessorKey: 'paymentLink', header: 'Payment Link', enableColumnFilter: false,
+        Cell: ({ cell }) => cell.getValue() ? (
+          <a href={cell.getValue()} target="_blank" rel="noopener noreferrer">Link</a>
+        ) : null,
+      },
     ],
     []
   );

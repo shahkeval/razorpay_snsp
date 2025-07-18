@@ -129,9 +129,9 @@ exports.createPaymentLink = [
         key_id: process.env.RAZORPAY_KEY_ID,
         key_secret: process.env.RAZORPAY_KEY_SECRET,
       });
-      const expireBy = Math.floor(Date.now() / 1000) + 16 * 60; // 16 minutes from now (buffer for server time skew)
+      const expireBy = Math.floor((Date.now() + 16 * 60 * 1000) / 1000); // 16 minutes from now (buffer for server time skew)
       const paymentLink = await razorpay.paymentLink.create({
-        amount: 50000, // Rs. 500.00 in paise
+        amount: 1000, // Rs. 500.00 in paise
         currency: 'INR',
         accept_partial: false,
         description: 'Donation for 7 Yatra',
@@ -210,49 +210,49 @@ exports.razorpayWebhook = async (req, res) => {
 // 3. Verify payment status (frontend polling after redirect)
 exports.verifyPayment = async (req, res) => {
   try {
-    console.log("1");
+    // console.log("1");
     const { yatrikNo, orderId } = req.query;
     let payment;
     if (orderId) {
       payment = await Payment.findOne({ orderId });
-      console.log("2");
+      // console.log("2");
     } else if (yatrikNo) {
       payment = await Payment.findOne({ yatrikNo });
-      console.log("3");
+      // console.log("3");
     }
     if (!payment) return res.status(404).json({ status: 'not_found' });
     if (payment.status === 'paid') {
       // Only update isPaid field in Yatrik collection
-      console.log("4");
+      // console.log("4");
       if (payment.yatrikNo) {
-        console.log("5");
+        // console.log("5");
         await Yatrik.updateOne(
           { yatrikNo: payment.yatrikNo },
           { isPaid: 'paid' }
         );
       }
-      console.log("6");
+      // console.log("6");
       return res.json({ status: 'paid' });
     }
     // If not paid, check Razorpay directly
-    console.log("7");
+    // console.log("7");
     let razorpayRes;
     try {
-      console.log("8");
+      // console.log("8");
       const razorpay = new Razorpay({
         key_id: process.env.RAZORPAY_KEY_ID,
         key_secret: process.env.RAZORPAY_KEY_SECRET,
       });
-      console.log("9");
+      // console.log("9");
       razorpayRes = await razorpay.paymentLink.fetch(orderId);
     } catch (err) {
-      console.log("10");
+      // console.log("10");
       return res.status(500).json({ status: 'error', message: 'Razorpay fetch failed' });
     }
-    console.log("11");
+    // console.log("11");
     if (razorpayRes.status === 'paid') {
       // Update existing Payment record with all details
-      console.log("12");
+      // console.log("12");
       payment.status = 'paid';
       payment.amount = '5000';
       payment.method = razorpayRes.payment ? razorpayRes.payment.method : payment.method;
@@ -266,20 +266,20 @@ exports.verifyPayment = async (req, res) => {
       await payment.save();
       // Only update isPaid field in Yatrik collection
       if (payment.yatrikNo) {
-        console.log("13");
+        // console.log("13");
         await Yatrik.updateOne(
           { yatrikNo: payment.yatrikNo },
           { isPaid: 'paid' }
         );
-        console.log("14");
+        // console.log("14");
       }
       return res.json({ status: 'paid' });
     }
-    console.log("15");
+    // console.log("15");
     // Not paid yet, return current status
     return res.json({ status: razorpayRes.status });
   } catch (error) {
-    console.log("16");
+    // console.log("16");
     res.status(500).json({ message: error.message });
   }
 };

@@ -131,9 +131,11 @@ exports.createPaymentLink = [
         key_id: process.env.RAZORPAY_KEY_ID,
         key_secret: process.env.RAZORPAY_KEY_SECRET,
       });
-      const expireBy = Math.floor(Date.now() / 1000) + 16 * 60; // 16 minutes from now (buffer for server time skew)
+      const expireBy = Math.floor((Date.now() + 16 * 60 * 1000) / 1000);
+      console.log(Date.now());
+      console.log("hello time is this please check ",expireBy); // 16 minutes from now (buffer for server time skew)
       const paymentLink = await razorpay.paymentLink.create({
-        amount: 50000, // Rs. 500.00 in paise
+        amount: 1000, // Rs. 500.00 in paise
         currency: 'INR',
         accept_partial: false,
         description: 'Donation for 7 Yatra',

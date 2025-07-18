@@ -138,7 +138,6 @@ const Yatra2025VaiyavachManagementPage = () => {
       { accessorKey: 'valueOfVaiyavach', header: 'Value Of Vaiyavach', enableColumnFilter: true },
       { accessorKey: 'vaiyavachiConfirmation', header: 'Vaiyavachi Confirmation', enableColumnFilter: true },
       { accessorKey: 'familyConfirmation', header: 'Family Confirmation', enableColumnFilter: true },
-      { accessorKey: 'transactionNumber', header: 'Transaction No', enableColumnFilter: true },
       { accessorKey: 'isPaid', header: 'Is Paid', enableColumnFilter: true },
       { accessorKey: 'paymentLink', header: 'Payment Link', enableColumnFilter: false,
         Cell: ({ cell, row }) => {
