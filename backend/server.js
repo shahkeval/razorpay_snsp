@@ -54,6 +54,8 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/rssmsu', require('./routes/rssmsu'));
 app.use('/api/yatriks', require('./routes/yatrikRoutes'));
 app.use('/api/vaiyavach', require('./routes/vaiyavchRoutes'));
+app.use('/api/painting_rssm', require('./routes/paintingRSSM'));
+app.use('/api/logs', require('./routes/log'));
 
 // Razorpay webhook endpoint (ensure raw body for signature verification)
 app.post('/api/yatriks/razorpay-webhook', bodyParser.raw({ type: '*/*' }), require('./controllers/yatrikController').razorpayWebhook);

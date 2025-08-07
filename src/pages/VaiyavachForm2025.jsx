@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
-import imageCompression from 'browser-image-compression';
+import imageCompression from "browser-image-compression";
 
 const VaiyavachForm2025 = ({ event, onComplete }) => {
   // State
@@ -15,7 +15,7 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
     religiousEducation: "",
     weight: "",
     height: "",
-    dateOfBirth: "", 
+    dateOfBirth: "",
     address: "",
     state: "",
     city: "",
@@ -29,18 +29,23 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
     howManyDaysJoin: "",
     typeOfVaiyavach: "",
     vaiyavachTypeValue: "",
-    vaiyavachiConfirmation: "",
-    familyConfirmation: "",
+    vaiyavachiConfirmation: "yes",
+    familyConfirmation: "yes",
     progress: 0,
   });
   const [vaiyavachCurrentStep, setVaiyavachCurrentStep] = useState(1);
   const [vaiyavachPhotoPreview, setVaiyavachPhotoPreview] = useState(null);
-  const [vaiyavachTransactionNumber, setVaiyavachTransactionNumber] = useState("");
-  const [vaiyavachCaptchaValue, setVaiyavachCaptchaValue] = useState(() => Math.random().toString(36).substring(2, 8).toUpperCase());
+  const [vaiyavachTransactionNumber, setVaiyavachTransactionNumber] =
+    useState("");
+  const [vaiyavachCaptchaValue, setVaiyavachCaptchaValue] = useState(() =>
+    Math.random().toString(36).substring(2, 8).toUpperCase()
+  );
   const [vaiyavachCaptchaInput, setVaiyavachCaptchaInput] = useState("");
-  const [vaiyavachPaymentThankYou, setVaiyavachPaymentThankYou] = useState(false);
+  const [vaiyavachPaymentThankYou, setVaiyavachPaymentThankYou] =
+    useState(false);
   // Add state for payment
-  const [isSubmittingRegistration, setIsSubmittingRegistration] = useState(false);
+  const [isSubmittingRegistration, setIsSubmittingRegistration] =
+    useState(false);
   const [paymentLinkError, setPaymentLinkError] = useState("");
   const [vaiyavachErrors, setVaiyavachErrors] = useState({});
   const [typeValueCounts, setTypeValueCounts] = useState({});
@@ -48,38 +53,55 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
   // Data
   const states = require("../data/IN-states.json");
   const cities = require("../data/IN-cities.json");
-  const vaiyavachFilteredCities = cities.filter((city) => city.stateCode === vaiyavachForm.state);
+  const vaiyavachFilteredCities = cities.filter(
+    (city) => city.stateCode === vaiyavachForm.state
+  );
 
   useEffect(() => {
     if (vaiyavachCurrentStep === 4) {
-      axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/vaiyavach/type-value-counts`)
-        .then(res => setTypeValueCounts(res.data || {}))
+      axios
+        .get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/vaiyavach/type-value-counts`
+        )
+        .then((res) => setTypeValueCounts(res.data || {}))
         .catch(() => setTypeValueCounts({}));
     }
   }, [vaiyavachCurrentStep]);
 
   // Handlers
   const validateField = (name, value) => {
-    let error = '';
-    if (["mobileNumber", "whatsappNumber", "familyMemberWhatsapp", "emergencyNumber"].includes(name)) {
-      if (!/^[0-9]{0,10}$/.test(value)) error = 'Only digits allowed';
-      else if (value.length !== 10) error = 'Must be exactly 10 digits';
+    let error = "";
+    if (
+      [
+        "mobileNumber",
+        "whatsappNumber",
+        "familyMemberWhatsapp",
+        "emergencyNumber",
+      ].includes(name)
+    ) {
+      if (!/^[0-9]{0,10}$/.test(value)) error = "Only digits allowed";
+      else if (value.length !== 10) error = "Must be exactly 10 digits";
     }
+    if (name === "emergencyNumber" && vaiyavachForm.mobileNumber == value)
+      error = "emergency number can't be same as mobile number";
     if (name === "email") {
-      if (!/^\S+@\S+\.\S+$/.test(value)) error = 'Invalid email address';
+      if (!/^\S+@\S+\.\S+$/.test(value)) error = "Invalid email address";
     }
     if (["weight", "height"].includes(name)) {
-      if (!/^[0-9]*$/.test(value)) error = 'Only positive numbers allowed';
-      else if (value === '' || parseInt(value) <= 0) error = 'Must be a positive number';
+      if (!/^\d*\.?\d*$/.test(value)) error = "Only positive numbers allowed";
+      else if (value === "" || parseInt(value) <= 0)
+        error = "Must be a positive number";
     }
     if (name === "dateOfBirth") {
       if (value) {
-        const age = Math.floor((Date.now() - new Date(value)) / (365.25 * 24 * 60 * 60 * 1000));
-        if (age < 12) error = 'Age must be at least 12';
+        const age = Math.floor(
+          (Date.now() - new Date(value)) / (365.25 * 24 * 60 * 60 * 1000)
+        );
+        if (age < 12) error = "Age must be at least 12";
       }
     }
     if (name === "address") {
-      if (value.length > 255) error = 'Address cannot exceed 255 characters';
+      if (value.length > 255) error = "Address cannot exceed 255 characters";
     }
     return error;
   };
@@ -89,7 +111,11 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
     if (files) {
       const file = files[0];
       try {
-        const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+        };
         const compressedFile = await imageCompression(file, options);
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -99,42 +125,72 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
         };
         reader.readAsDataURL(compressedFile);
       } catch (err) {
-        alert('Image compression failed. Please try another image.');
+        alert("Image compression failed. Please try another image.");
       }
       return;
     }
     // For mobile fields, allow only digits and max 10
-    if (["mobileNumber", "whatsappNumber", "familyMemberWhatsapp", "emergencyNumber"].includes(name)) {
-      fieldValue = value.replace(/[^0-9]/g, '').slice(0, 10);
+    if (
+      [
+        "mobileNumber",
+        "whatsappNumber",
+        "familyMemberWhatsapp",
+        "emergencyNumber",
+      ].includes(name)
+    ) {
+      fieldValue = value.replace(/[^0-9]/g, "").slice(0, 10);
     }
     // For weight/height, allow only positive numbers
-    if (["weight", "height"].includes(name)) {
-      fieldValue = value.replace(/[^0-9]/g, '');
-    }
+    // if (["weight", "height"].includes(name)) {
+    //   fieldValue = value.replace(/[^0-9]/g, "");
+    // }
     // For address, limit to 255 chars
     if (name === "address") {
       fieldValue = value.slice(0, 255);
     }
     setVaiyavachForm((prev) => ({ ...prev, [name]: fieldValue }));
-    setVaiyavachErrors((prev) => ({ ...prev, [name]: validateField(name, fieldValue) }));
+    setVaiyavachErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, fieldValue),
+    }));
   };
   const validateStep = (step) => {
     let errors = {};
     if (step === 1) {
-      ["vaiyavachiPhoto", "vaiyavachiName", "mobileNumber", "whatsappNumber"].forEach((f) => {
-        const err = validateField(f, vaiyavachForm[f] || '');
+      [
+        "vaiyavachiPhoto",
+        "vaiyavachiName",
+        "mobileNumber",
+        "whatsappNumber",
+      ].forEach((f) => {
+        const err = validateField(f, vaiyavachForm[f] || "");
         if (err) errors[f] = err;
       });
     }
     if (step === 2) {
-      ["email", "education", "religiousEducation", "weight", "height", "dateOfBirth", "address", "state", "city"].forEach((f) => {
-        const err = validateField(f, vaiyavachForm[f] || '');
+      [
+        "email",
+        "education",
+        "religiousEducation",
+        "weight",
+        "height",
+        "dateOfBirth",
+        "address",
+        "state",
+        "city",
+      ].forEach((f) => {
+        const err = validateField(f, vaiyavachForm[f] || "");
         if (err) errors[f] = err;
       });
     }
     if (step === 3) {
-      ["familyMemberName", "familyMemberRelation", "familyMemberWhatsapp", "emergencyNumber"].forEach((f) => {
-        const err = validateField(f, vaiyavachForm[f] || '');
+      [
+        "familyMemberName",
+        "familyMemberRelation",
+        "familyMemberWhatsapp",
+        "emergencyNumber",
+      ].forEach((f) => {
+        const err = validateField(f, vaiyavachForm[f] || "");
         if (err) errors[f] = err;
       });
     }
@@ -157,7 +213,9 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
     e.preventDefault();
     if (vaiyavachCaptchaInput !== vaiyavachCaptchaValue) {
       alert("Captcha does not match. Please try again.");
-      setVaiyavachCaptchaValue(Math.random().toString(36).substring(2, 8).toUpperCase());
+      setVaiyavachCaptchaValue(
+        Math.random().toString(36).substring(2, 8).toUpperCase()
+      );
       setVaiyavachCaptchaInput("");
       return;
     }
@@ -178,15 +236,24 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
       formData.append("city", vaiyavachForm.city);
       formData.append("familyMemberName", vaiyavachForm.familyMemberName);
       formData.append("relation", vaiyavachForm.familyMemberRelation);
-      formData.append("familyMemberWANumber", vaiyavachForm.familyMemberWhatsapp);
+      formData.append(
+        "familyMemberWANumber",
+        vaiyavachForm.familyMemberWhatsapp
+      );
       formData.append("emergencyNumber", vaiyavachForm.emergencyNumber);
       formData.append("is7YatraDoneEarlier", vaiyavachForm.done7YatraEarlier);
-      formData.append("haveYouDoneVaiyavachEarlier", vaiyavachForm.doneVaiyavachEarlier);
+      formData.append(
+        "haveYouDoneVaiyavachEarlier",
+        vaiyavachForm.doneVaiyavachEarlier
+      );
       formData.append("howToReachPalitana", vaiyavachForm.howToReachPalitana);
       formData.append("howManyDaysJoin", vaiyavachForm.howManyDaysJoin);
       formData.append("typeOfVaiyavach", vaiyavachForm.typeOfVaiyavach);
       formData.append("valueOfVaiyavach", vaiyavachForm.vaiyavachTypeValue);
-      formData.append("vaiyavachiConfirmation", vaiyavachForm.vaiyavachiConfirmation);
+      formData.append(
+        "vaiyavachiConfirmation",
+        vaiyavachForm.vaiyavachiConfirmation
+      );
       formData.append("familyConfirmation", vaiyavachForm.familyConfirmation);
       formData.append("transactionNumber", vaiyavachTransactionNumber);
       await axios.post(
@@ -224,28 +291,41 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
       formData.append("city", vaiyavachForm.city);
       formData.append("familyMemberName", vaiyavachForm.familyMemberName);
       formData.append("relation", vaiyavachForm.familyMemberRelation);
-      formData.append("familyMemberWANumber", vaiyavachForm.familyMemberWhatsapp);
+      formData.append(
+        "familyMemberWANumber",
+        vaiyavachForm.familyMemberWhatsapp
+      );
       formData.append("emergencyNumber", vaiyavachForm.emergencyNumber);
       formData.append("is7YatraDoneEarlier", vaiyavachForm.done7YatraEarlier);
-      formData.append("haveYouDoneVaiyavachEarlier", vaiyavachForm.doneVaiyavachEarlier);
+      formData.append(
+        "haveYouDoneVaiyavachEarlier",
+        vaiyavachForm.doneVaiyavachEarlier
+      );
       formData.append("howToReachPalitana", vaiyavachForm.howToReachPalitana);
       formData.append("howManyDaysJoin", vaiyavachForm.howManyDaysJoin);
       formData.append("typeOfVaiyavach", vaiyavachForm.typeOfVaiyavach);
       formData.append("valueOfVaiyavach", vaiyavachForm.vaiyavachTypeValue);
-      formData.append("vaiyavachiConfirmation", vaiyavachForm.vaiyavachiConfirmation);
+      formData.append(
+        "vaiyavachiConfirmation",
+        vaiyavachForm.vaiyavachiConfirmation
+      );
       formData.append("familyConfirmation", vaiyavachForm.familyConfirmation);
       // Send to backend to create payment link
       const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-      const res = await axios.post(`${API_BASE_URL}/api/vaiyavach/createvaiyavachpayment`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const res = await axios.post(
+        `${API_BASE_URL}/api/vaiyavach/createvaiyavachpayment`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
       const { paymentLink, vaiyavachNo, orderId } = res.data;
-      sessionStorage.setItem('vaiyavachNo', vaiyavachNo);
-      sessionStorage.setItem('orderId', orderId);
-      console.log(paymentLink)
+      sessionStorage.setItem("vaiyavachNo", vaiyavachNo);
+      sessionStorage.setItem("orderId", orderId);
+      // console.log(paymentLink);
       // window.open(paymentLink, '_blank');
       window.location.href = paymentLink;
     } catch (err) {
-      console.error('Payment link error:', err);
-      let errorMsg = 'Failed to initiate payment. Please try again.';
+      console.error("Payment link error:", err);
+      let errorMsg = "Failed to initiate payment. Please try again.";
       if (err.response && err.response.data && err.response.data.message) {
         errorMsg = err.response.data.message;
       }
@@ -276,7 +356,11 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
         }}
         aria-label="Back to registration type selection"
       >
-        <span style={{ fontSize: "2rem", marginRight: "0.5rem", lineHeight: 1 }}>&larr;</span>
+        <span
+          style={{ fontSize: "2rem", marginRight: "0.5rem", lineHeight: 1 }}
+        >
+          &larr;
+        </span>
         <span style={{ fontSize: "1rem", fontWeight: 500 }}></span>
       </button>
       <h2>Vaiyavach Registration</h2>
@@ -284,7 +368,11 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
         <div
           className="progress"
           style={{
-            width: `${vaiyavachPaymentThankYou ? 100 : ((vaiyavachCurrentStep - 1) / 5) * 100}%`,
+            width: `${
+              vaiyavachPaymentThankYou
+                ? 100
+                : ((vaiyavachCurrentStep - 1) / 5) * 100
+            }%`,
           }}
         ></div>
       </div>
@@ -301,7 +389,11 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.vaiyavachiPhoto && <div className="error-message">{vaiyavachErrors.vaiyavachiPhoto}</div>}
+            {vaiyavachErrors.vaiyavachiPhoto && (
+              <div className="error-message">
+                {vaiyavachErrors.vaiyavachiPhoto}
+              </div>
+            )}
           </div>
           {vaiyavachPhotoPreview && (
             <img
@@ -320,7 +412,11 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.vaiyavachiName && <div className="error-message">{vaiyavachErrors.vaiyavachiName}</div>}
+            {vaiyavachErrors.vaiyavachiName && (
+              <div className="error-message">
+                {vaiyavachErrors.vaiyavachiName}
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="mobileNumber">Mobile Number*</label>
@@ -332,7 +428,11 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.mobileNumber && <div className="error-message">{vaiyavachErrors.mobileNumber}</div>}
+            {vaiyavachErrors.mobileNumber && (
+              <div className="error-message">
+                {vaiyavachErrors.mobileNumber}
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="whatsappNumber">WhatsApp Number*</label>
@@ -344,9 +444,15 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.whatsappNumber && <div className="error-message">{vaiyavachErrors.whatsappNumber}</div>}
+            {vaiyavachErrors.whatsappNumber && (
+              <div className="error-message">
+                {vaiyavachErrors.whatsappNumber}
+              </div>
+            )}
           </div>
-          <button type="submit" className="next-button">Next</button>
+          <button type="submit" className="next-button">
+            Next
+          </button>
         </form>
       )}
       {/* Step 2 */}
@@ -362,7 +468,9 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.email && <div className="error-message">{vaiyavachErrors.email}</div>}
+            {vaiyavachErrors.email && (
+              <div className="error-message">{vaiyavachErrors.email}</div>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="education">Education*</label>
@@ -374,7 +482,9 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.education && <div className="error-message">{vaiyavachErrors.education}</div>}
+            {vaiyavachErrors.education && (
+              <div className="error-message">{vaiyavachErrors.education}</div>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="religiousEducation">Religious Education*</label>
@@ -386,7 +496,11 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.religiousEducation && <div className="error-message">{vaiyavachErrors.religiousEducation}</div>}
+            {vaiyavachErrors.religiousEducation && (
+              <div className="error-message">
+                {vaiyavachErrors.religiousEducation}
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="weight">Weight (in kg)*</label>
@@ -398,10 +512,12 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.weight && <div className="error-message">{vaiyavachErrors.weight}</div>}
+            {vaiyavachErrors.weight && (
+              <div className="error-message">{vaiyavachErrors.weight}</div>
+            )}
           </div>
           <div className="form-group">
-            <label htmlFor="height">Height (in cm)*</label>
+            <label htmlFor="height">Height (in inch)*</label>
             <input
               type="number"
               id="height"
@@ -410,7 +526,9 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.height && <div className="error-message">{vaiyavachErrors.height}</div>}
+            {vaiyavachErrors.height && (
+              <div className="error-message">{vaiyavachErrors.height}</div>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="dateOfBirth">Date of Birth*</label>
@@ -422,7 +540,9 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.dateOfBirth && <div className="error-message">{vaiyavachErrors.dateOfBirth}</div>}
+            {vaiyavachErrors.dateOfBirth && (
+              <div className="error-message">{vaiyavachErrors.dateOfBirth}</div>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="address">Address*</label>
@@ -434,7 +554,9 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.address && <div className="error-message">{vaiyavachErrors.address}</div>}
+            {vaiyavachErrors.address && (
+              <div className="error-message">{vaiyavachErrors.address}</div>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="state">State*</label>
@@ -452,7 +574,9 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                 </option>
               ))}
             </select>
-            {vaiyavachErrors.state && <div className="error-message">{vaiyavachErrors.state}</div>}
+            {vaiyavachErrors.state && (
+              <div className="error-message">{vaiyavachErrors.state}</div>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="city">City*</label>
@@ -470,16 +594,28 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                 </option>
               ))}
             </select>
-            {vaiyavachErrors.city && <div className="error-message">{vaiyavachErrors.city}</div>}
+            {vaiyavachErrors.city && (
+              <div className="error-message">{vaiyavachErrors.city}</div>
+            )}
           </div>
-          <button type="button" className="back-button-yatra" onClick={vaiyavachPrevStep}>Back</button>
-          <button type="submit" className="next-button">Next</button>
+          <button
+            type="button"
+            className="back-button-yatra"
+            onClick={vaiyavachPrevStep}
+          >
+            Back
+          </button>
+          <button type="submit" className="next-button">
+            Next
+          </button>
         </form>
       )}
       {/* Step 3 */}
       {vaiyavachCurrentStep === 3 && (
         <form onSubmit={vaiyavachNextStep}>
-          <h3 style={{ marginTop: "2rem", marginBottom: "1rem" }}>Family Details</h3>
+          <h3 style={{ marginTop: "2rem", marginBottom: "1rem" }}>
+            Family Details
+          </h3>
           <div className="form-group">
             <label htmlFor="familyMemberName">Family Member Name*</label>
             <input
@@ -490,7 +626,11 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.familyMemberName && <div className="error-message">{vaiyavachErrors.familyMemberName}</div>}
+            {vaiyavachErrors.familyMemberName && (
+              <div className="error-message">
+                {vaiyavachErrors.familyMemberName}
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="familyMemberRelation">Relation*</label>
@@ -502,10 +642,16 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.familyMemberRelation && <div className="error-message">{vaiyavachErrors.familyMemberRelation}</div>}
+            {vaiyavachErrors.familyMemberRelation && (
+              <div className="error-message">
+                {vaiyavachErrors.familyMemberRelation}
+              </div>
+            )}
           </div>
           <div className="form-group">
-            <label htmlFor="familyMemberWhatsapp">Family Member WhatsApp Number*</label>
+            <label htmlFor="familyMemberWhatsapp">
+              Family Member WhatsApp Number*
+            </label>
             <input
               type="tel"
               id="familyMemberWhatsapp"
@@ -514,7 +660,11 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.familyMemberWhatsapp && <div className="error-message">{vaiyavachErrors.familyMemberWhatsapp}</div>}
+            {vaiyavachErrors.familyMemberWhatsapp && (
+              <div className="error-message">
+                {vaiyavachErrors.familyMemberWhatsapp}
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="emergencyNumber">Emergency Number*</label>
@@ -526,10 +676,22 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               onChange={handleVaiyavachChange}
               required
             />
-            {vaiyavachErrors.emergencyNumber && <div className="error-message">{vaiyavachErrors.emergencyNumber}</div>}
+            {vaiyavachErrors.emergencyNumber && (
+              <div className="error-message">
+                {vaiyavachErrors.emergencyNumber}
+              </div>
+            )}
           </div>
-          <button type="button" className="back-button-yatra" onClick={vaiyavachPrevStep}>Back</button>
-          <button type="submit" className="next-button">Next</button>
+          <button
+            type="button"
+            className="back-button-yatra"
+            onClick={vaiyavachPrevStep}
+          >
+            Back
+          </button>
+          <button type="submit" className="next-button">
+            Next
+          </button>
         </form>
       )}
       {/* Step 4 */}
@@ -537,8 +699,16 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
         <form onSubmit={vaiyavachNextStep}>
           <div className="form-group">
             <label>Have you done 7 yatra earlier?</label>
-            <div style={{ display: "flex", gap: "2rem", margin: "0.5rem 0 1rem 0" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "2rem",
+                margin: "0.5rem 0 1rem 0",
+              }}
+            >
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="done7YatraEarlier"
@@ -549,7 +719,9 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                 />{" "}
                 Yes
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="done7YatraEarlier"
@@ -564,8 +736,16 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
           </div>
           <div className="form-group">
             <label>Have you done Vaiyavach earlier?</label>
-            <div style={{ display: "flex", gap: "2rem", margin: "0.5rem 0 1rem 0" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "2rem",
+                margin: "0.5rem 0 1rem 0",
+              }}
+            >
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="doneVaiyavachEarlier"
@@ -576,7 +756,9 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                 />{" "}
                 Yes
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="doneVaiyavachEarlier"
@@ -591,8 +773,16 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
           </div>
           <div className="form-group">
             <label>How to reach palitana?</label>
-            <div style={{ display: "flex", gap: "2rem", margin: "0.5rem 0 1rem 0" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "2rem",
+                margin: "0.5rem 0 1rem 0",
+              }}
+            >
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="howToReachPalitana"
@@ -603,12 +793,16 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                 />{" "}
                 With Us
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="howToReachPalitana"
                   value="direct_palitana"
-                  checked={vaiyavachForm.howToReachPalitana === "direct_palitana"}
+                  checked={
+                    vaiyavachForm.howToReachPalitana === "direct_palitana"
+                  }
                   onChange={handleVaiyavachChange}
                   required
                 />{" "}
@@ -618,8 +812,16 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
           </div>
           <div className="form-group">
             <label>How many days you join with us?</label>
-            <div style={{ display: "flex", gap: "2rem", margin: "0.5rem 0 1rem 0" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "2rem",
+                margin: "0.5rem 0 1rem 0",
+              }}
+            >
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="howManyDaysJoin"
@@ -630,7 +832,9 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                 />{" "}
                 2 days
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="howManyDaysJoin"
@@ -645,8 +849,16 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
           </div>
           <div className="form-group">
             <label>Which type of vaiyavach you do?</label>
-            <div style={{ display: "flex", gap: "2rem", margin: "0.5rem 0 1rem 0" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "2rem",
+                margin: "0.5rem 0 1rem 0",
+              }}
+            >
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="typeOfVaiyavach"
@@ -657,7 +869,9 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                 />{" "}
                 Spot
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="typeOfVaiyavach"
@@ -668,7 +882,9 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                 />{" "}
                 Roamming
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="typeOfVaiyavach"
@@ -694,22 +910,39 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               >
                 <option value="">Select</option>
                 {[
-                  { value: "સ્પોટ નંબર 1 : ધેટી ના પગલાં", label: "સ્પોટ નંબર 1 : ધેટી ના પગલાં" },
+                  {
+                    value: "સ્પોટ નંબર 1 : ધેટી ના પગલાં",
+                    label: "સ્પોટ નંબર 1 : ધેટી ના પગલાં",
+                  },
                   { value: "સ્પોટ નંબર 2", label: "સ્પોટ નંબર 2" },
                   { value: "સ્પોટ નંબર 3", label: "સ્પોટ નંબર 3" },
                   { value: "સ્પોટ નંબર 4", label: "સ્પોટ નંબર 4" },
-                  { value: "સ્પોટ નંબર 5 : ખોડીયાર માતા ની પરબ", label: "સ્પોટ નંબર 5 : ખોડીયાર માતા ની પરબ" },
+                  {
+                    value: "સ્પોટ નંબર 5 : ખોડીયાર માતા ની પરબ",
+                    label: "સ્પોટ નંબર 5 : ખોડીયાર માતા ની પરબ",
+                  },
                   { value: "સ્પોટ નંબર 6", label: "સ્પોટ નંબર 6" },
                   { value: "સ્પોટ નંબર 7", label: "સ્પોટ નંબર 7" },
                   { value: "સ્પોટ નંબર 8", label: "સ્પોટ નંબર 8" },
                   { value: "સ્પોટ નંબર 9", label: "સ્પોટ નંબર 9" },
-                  { value: "સ્પોટ નંબર 10 : રામપોળ (નવટુક જવાના રસ્તે)", label: "સ્પોટ નંબર 10 : રામપોળ (નવટુક જવાના રસ્તે)" },
-                ].map(opt => {
-                  const count = (typeValueCounts.spot && typeValueCounts.spot[opt.value]) || 0;
+                  {
+                    value: "સ્પોટ નંબર 10 : રામપોળ (નવટુક જવાના રસ્તે)",
+                    label: "સ્પોટ નંબર 10 : રામપોળ (નવટુક જવાના રસ્તે)",
+                  },
+                ].map((opt, idx, arr) => {
+                  const count =
+                    (typeValueCounts.spot && typeValueCounts.spot[opt.value]) ||
+                    0;
                   const remaining = 8 - count;
+                  const isFirstOrLast = idx === 0 || idx === arr.length - 1;
                   return (
-                    <option key={opt.value} value={opt.value} disabled={remaining <= 0}>
-                      {opt.label} {`(${remaining} seats left)`}
+                    <option
+                      key={opt.value}
+                      value={opt.value}
+                      disabled={isFirstOrLast || remaining <= 0}
+                    >
+                      {opt.label}{" "}
+                      {!isFirstOrLast && `(${remaining} seats left)`}
                     </option>
                   );
                 })}
@@ -728,21 +961,40 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               >
                 <option value="">Select</option>
                 {[
-                  { value: "1-2", label: "1-2" },
-                  { value: "2-3", label: "2-3" },
-                  { value: "3-4", label: "3-4" },
-                  { value: "4-5", label: "4-5" },
-                  { value: "5-6", label: "5-6" },
-                  { value: "6-7", label: "6-7" },
-                  { value: "7-8", label: "7-8" },
-                  { value: "8-9", label: "8-9" },
-                  { value: "9-10", label: "9-10" },
-                ].map(opt => {
-                  const count = (typeValueCounts.roamming && typeValueCounts.roamming[opt.value]) || 0;
-                  const remaining = 12 - count;
+                  {
+                    value: "સ્પોટ નંબર 1 : ધેટી ના પગલાં",
+                    label: "સ્પોટ નંબર 1 : ધેટી ના પગલાં",
+                  },
+                  { value: "સ્પોટ નંબર 2", label: "સ્પોટ નંબર 2" },
+                  { value: "સ્પોટ નંબર 3", label: "સ્પોટ નંબર 3" },
+                  { value: "સ્પોટ નંબર 4", label: "સ્પોટ નંબર 4" },
+                  {
+                    value: "સ્પોટ નંબર 5 : ખોડીયાર માતા ની પરબ",
+                    label: "સ્પોટ નંબર 5 : ખોડીયાર માતા ની પરબ",
+                  },
+                  { value: "સ્પોટ નંબર 6", label: "સ્પોટ નંબર 6" },
+                  { value: "સ્પોટ નંબર 7", label: "સ્પોટ નંબર 7" },
+                  { value: "સ્પોટ નંબર 8", label: "સ્પોટ નંબર 8" },
+                  { value: "સ્પોટ નંબર 9", label: "સ્પોટ નંબર 9" },
+                  {
+                    value: "સ્પોટ નંબર 10 : રામપોળ (નવટુક જવાના રસ્તે)",
+                    label: "સ્પોટ નંબર 10 : રામપોળ (નવટુક જવાના રસ્તે)",
+                  },
+                ].map((opt, idx, arr) => {
+                  const count =
+                    (typeValueCounts.roamming &&
+                      typeValueCounts.roamming[opt.value]) ||
+                    0;
+                  const remaining = 15 - count;
+                  const isFirstOrLast = idx === 0 || idx === arr.length - 1;
                   return (
-                    <option key={opt.value} value={opt.value} disabled={remaining <= 0}>
-                      {opt.label} {`(${remaining} seats left)`}
+                    <option
+                      key={opt.value}
+                      value={opt.value}
+                      disabled={isFirstOrLast || remaining <= 0}
+                    >
+                      {opt.label}{" "}
+                      {!isFirstOrLast && `(${remaining} seats left)`}
                     </option>
                   );
                 })}
@@ -761,16 +1013,38 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               >
                 <option value="">Select</option>
                 {[
-                  { value: "ચૈત્ય વંદન શ્રી આદિનાથ પ્રભુ ના રંગ મંડપમાં", label: "ચૈત્ય વંદન શ્રી આદિનાથ પ્રભુ ના રંગ મંડપમાં" },
-                  { value: "ચૈત્ય વંદન શ્રી પુંડરીકસ્વામી ભગવાન પાસે", label: "ચૈત્ય વંદન શ્રી પુંડરીકસ્વામી ભગવાન પાસે" },
-                  { value: "ચૈત્ય વંદન શ્રી રાયણ પગલાં", label: "ચૈત્ય વંદન શ્રી રાયણ પગલાં" },
-                  { value: "ચૈત્ય વંદન શ્રી શાંતિનાથ ભગવાન", label: "ચૈત્ય વંદન શ્રી શાંતિનાથ ભગવાન" },
-                  { value: "ચૈત્ય વંદન  ધેટી ના પગલે", label: "ચૈત્ય વંદન  ધેટી ના પગલે" },
-                ].map(opt => {
-                  const count = (typeValueCounts.chaityavandan && typeValueCounts.chaityavandan[opt.value]) || 0;
-                  const remaining = 5 - count;
+                  {
+                    value: "ચૈત્ય વંદન શ્રી આદિનાથ પ્રભુ ના રંગ મંડપમાં",
+                    label: "ચૈત્ય વંદન શ્રી આદિનાથ પ્રભુ ના રંગ મંડપમાં",
+                  },
+                  {
+                    value: "ચૈત્ય વંદન શ્રી પુંડરીકસ્વામી ભગવાન પાસે",
+                    label: "ચૈત્ય વંદન શ્રી પુંડરીકસ્વામી ભગવાન પાસે",
+                  },
+                  {
+                    value: "ચૈત્ય વંદન શ્રી રાયણ પગલાં",
+                    label: "ચૈત્ય વંદન શ્રી રાયણ પગલાં",
+                  },
+                  {
+                    value: "ચૈત્ય વંદન શ્રી શાંતિનાથ ભગવાન",
+                    label: "ચૈત્ય વંદન શ્રી શાંતિનાથ ભગવાન",
+                  },
+                  {
+                    value: "ચૈત્ય વંદન  ધેટી ના પગલે",
+                    label: "ચૈત્ય વંદન  ધેટી ના પગલે",
+                  },
+                ].map((opt) => {
+                  const count =
+                    (typeValueCounts.chaityavandan &&
+                      typeValueCounts.chaityavandan[opt.value]) ||
+                    0;
+                  const remaining = 3 - count;
                   return (
-                    <option key={opt.value} value={opt.value} disabled={remaining <= 0}>
+                    <option
+                      key={opt.value}
+                      value={opt.value}
+                      disabled={remaining <= 0}
+                    >
                       {opt.label} {`(${remaining} seats left)`}
                     </option>
                   );
@@ -781,8 +1055,16 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
           {/* Vaiyavachi Confirmation radio group */}
           <div className="form-group">
             <label>Vaiyavachi Confirmation</label>
-            <div style={{ display: "flex", gap: "2rem", margin: "0.5rem 0 1rem 0" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "2rem",
+                margin: "0.5rem 0 1rem 0",
+              }}
+            >
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="vaiyavachiConfirmation"
@@ -790,9 +1072,12 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                   checked={vaiyavachForm.vaiyavachiConfirmation === "yes"}
                   onChange={handleVaiyavachChange}
                   required
-                /> Yes
+                />{" "}
+                Yes
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="vaiyavachiConfirmation"
@@ -800,16 +1085,29 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                   checked={vaiyavachForm.vaiyavachiConfirmation === "no"}
                   onChange={handleVaiyavachChange}
                   required
-                /> No
+                />{" "}
+                No
               </label>
             </div>
-            {vaiyavachForm.vaiyavachiConfirmation !== 'yes' && <div className="error-message">Vaiyavachi Confirmation is required.</div>}
+            {vaiyavachForm.vaiyavachiConfirmation !== "yes" && (
+              <div className="error-message">
+                Vaiyavachi Confirmation is required.
+              </div>
+            )}
           </div>
           {/* Family Confirmation radio group */}
           <div className="form-group">
             <label>Family Confirmation</label>
-            <div style={{ display: "flex", gap: "2rem", margin: "0.5rem 0 1rem 0" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "2rem",
+                margin: "0.5rem 0 1rem 0",
+              }}
+            >
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="familyConfirmation"
@@ -817,9 +1115,12 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                   checked={vaiyavachForm.familyConfirmation === "yes"}
                   onChange={handleVaiyavachChange}
                   required
-                /> Yes
+                />{" "}
+                Yes
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 <input
                   type="radio"
                   name="familyConfirmation"
@@ -827,10 +1128,15 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                   checked={vaiyavachForm.familyConfirmation === "no"}
                   onChange={handleVaiyavachChange}
                   required
-                /> No
+                />{" "}
+                No
               </label>
             </div>
-            {vaiyavachForm.familyConfirmation !== 'yes' && <div className="error-message">Family Confirmation is required.</div>}
+            {vaiyavachForm.familyConfirmation !== "yes" && (
+              <div className="error-message">
+                Family Confirmation is required.
+              </div>
+            )}
           </div>
           <div
             style={{
@@ -850,20 +1156,54 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
               नियम और शर्तें
             </span>
             <br />
-            मैं अपनी इच्छा और मर्जी से शत्रुंजय गिरिराज की चौवीयार छठ करके सात यात्रा करने के लिए के आपके आयोजन में आने के लिए सहमत हूं. यात्रा के दौरान कोईभी मेडीकल आपत्ति आने पर उनकी जिम्मेदारी मेरी खुद की रहेगी. जो मुझे और मेरे परिवार को मंजूर है.
+            मैं अपनी इच्छा और मर्जी से शत्रुंजय गिरिराज की चौवीयार छठ करके सात
+            यात्रा करने के लिए के आपके आयोजन में आने के लिए सहमत हूं. यात्रा के
+            दौरान कोईभी मेडीकल आपत्ति आने पर उनकी जिम्मेदारी मेरी खुद की रहेगी.
+            जो मुझे और मेरे परिवार को मंजूर है.
           </div>
-          <button type="button" className="back-button-yatra" onClick={vaiyavachPrevStep}>Back</button>
-          <button type="submit" className="next-button">Next</button>
+          <button
+            type="button"
+            className="back-button-yatra"
+            onClick={vaiyavachPrevStep}
+          >
+            Back
+          </button>
+          <button type="submit" className="next-button">
+            Next
+          </button>
         </form>
       )}
       {/* Step 5: Payment */}
       {vaiyavachCurrentStep === 5 && !vaiyavachPaymentThankYou && (
         <div>
-          <h3 style={{ marginTop: "2rem", marginBottom: "1rem", textAlign: "center" }}>Registration Payment</h3>
-          <div style={{ textAlign: "center", fontWeight: "bold", fontSize: "1.2rem", marginBottom: "1rem" }}>
-            To register for this event, you need to pay a registration fee of Rs. 500.00/-
+          <h3
+            style={{
+              marginTop: "2rem",
+              marginBottom: "1rem",
+              textAlign: "center",
+            }}
+          >
+            Registration Payment
+          </h3>
+          <div
+            style={{
+              textAlign: "center",
+              fontWeight: "bold",
+              fontSize: "1.2rem",
+              marginBottom: "1rem",
+            }}
+          >
+            To register for this event, you need to pay a registration fee of
+            Rs. 500.00/-
           </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "1.5rem" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginBottom: "1.5rem",
+            }}
+          >
             <button
               type="button"
               className="next-button"
@@ -884,12 +1224,31 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
             >
               {isSubmittingRegistration ? "Processing..." : "Pay Now"}
             </button>
-            {paymentLinkError && <div style={{ color: "red", marginTop: 8 }}>{paymentLinkError}</div>}
-            <div style={{ marginTop: 12, color: "#333", fontSize: "1.05rem", textAlign: "center" }}>
+            {paymentLinkError && (
+              <div style={{ color: "red", marginTop: 8 }}>
+                {paymentLinkError}
+              </div>
+            )}
+            <div
+              style={{
+                marginTop: 12,
+                color: "#333",
+                fontSize: "1.05rem",
+                textAlign: "center",
+              }}
+            >
               <b>Total to pay: ₹500</b>
             </div>
-            <div style={{ marginTop: "1rem", color: "#888", fontSize: "0.95rem", textAlign: "center" }}>
-              You will be redirected to Razorpay to complete your payment securely.
+            <div
+              style={{
+                marginTop: "1rem",
+                color: "#888",
+                fontSize: "0.95rem",
+                textAlign: "center",
+              }}
+            >
+              You will be redirected to Razorpay to complete your payment
+              securely.
             </div>
           </div>
           <button
@@ -904,12 +1263,48 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
       )}
       {/* Thank You Message */}
       {vaiyavachCurrentStep === 5 && vaiyavachPaymentThankYou && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "300px", padding: "2rem 1rem" }}>
-          <div style={{ background: "#e8f5e9", border: "1px solid #43a047", borderRadius: "12px", padding: "2rem 2.5rem", textAlign: "center", boxShadow: "0 2px 8px rgba(67,160,71,0.07)" }}>
-            <div style={{ fontSize: "2rem", color: "#43a047", marginBottom: "1rem" }}>&#10003;</div>
-            <h2 style={{ color: "#2e7d32", marginBottom: "0.5rem" }}>Thank you for your registration!</h2>
-            <div style={{ fontSize: "1.1rem", color: "#333", marginBottom: "1.5rem" }}>
-              We have received your payment and details.<br />We will contact you with more information soon.
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "300px",
+            padding: "2rem 1rem",
+          }}
+        >
+          <div
+            style={{
+              background: "#e8f5e9",
+              border: "1px solid #43a047",
+              borderRadius: "12px",
+              padding: "2rem 2.5rem",
+              textAlign: "center",
+              boxShadow: "0 2px 8px rgba(67,160,71,0.07)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "2rem",
+                color: "#43a047",
+                marginBottom: "1rem",
+              }}
+            >
+              &#10003;
+            </div>
+            <h2 style={{ color: "#2e7d32", marginBottom: "0.5rem" }}>
+              Thank you for your registration!
+            </h2>
+            <div
+              style={{
+                fontSize: "1.1rem",
+                color: "#333",
+                marginBottom: "1.5rem",
+              }}
+            >
+              We have received your payment and details.
+              <br />
+              We will contact you with more information soon.
             </div>
             <button
               onClick={() => {
@@ -944,12 +1339,24 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                 });
                 setVaiyavachPhotoPreview(null);
                 setVaiyavachTransactionNumber("");
-                setVaiyavachCaptchaValue(Math.random().toString(36).substring(2, 8).toUpperCase());
+                setVaiyavachCaptchaValue(
+                  Math.random().toString(36).substring(2, 8).toUpperCase()
+                );
                 setVaiyavachCaptchaInput("");
                 setVaiyavachPaymentThankYou(false);
                 if (onComplete) onComplete();
               }}
-              style={{ background: "#43a047", color: "white", border: "none", borderRadius: "25px", padding: "0.8rem 1.5rem", fontWeight: 600, fontSize: "1rem", cursor: "pointer", transition: "background 0.2s" }}
+              style={{
+                background: "#43a047",
+                color: "white",
+                border: "none",
+                borderRadius: "25px",
+                padding: "0.8rem 1.5rem",
+                fontWeight: 600,
+                fontSize: "1rem",
+                cursor: "pointer",
+                transition: "background 0.2s",
+              }}
             >
               Add Another Response
             </button>
@@ -960,4 +1367,4 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
   );
 };
 
-export default VaiyavachForm2025; 
+export default VaiyavachForm2025;

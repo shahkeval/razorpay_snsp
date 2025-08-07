@@ -11,6 +11,7 @@ import emailjs from "emailjs-com"; // Import EmailJS
 import axios from "axios";
 import YatrikForm2025 from "./YatrikForm2025";
 import VaiyavachForm2025 from "./VaiyavachForm2025";
+import PaintingCompitationRSSM from "./painting_compitation_RSSM";
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -1314,6 +1315,8 @@ const EventDetails = () => {
                                 <VaiyavachForm2025 event={event} onComplete={() => setRegistrationType("")} />
                               )}
                             </div>
+                          ) : event.id === "painting-competition" ? (
+                            <PaintingCompitationRSSM />
                           ) : (
                             <form onSubmit={handleDefaultRegistrationSubmit}>
                               <div className="form-group">

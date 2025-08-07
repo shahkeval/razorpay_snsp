@@ -26,7 +26,7 @@ const Contact = () => {
       )
       .then(
         (result) => {
-          console.log(result.text);
+          // console.log(result.text);
           setEmailSent(true); // Email sent successfully
           setFormData({ // Reset form data
             user_name: '',

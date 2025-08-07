@@ -66,7 +66,7 @@ const Donation = () => {
     try {
       
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/donations`, formData);
-      console.log('Donation saved:', response.data);
+      // console.log('Donation saved:', response.data);
       
       // Generate QR code after successful donation
       const qrString = `upi://pay?pa=namonamahshashwatcha.62486048@hdfcbank&pn=${formData.name}&am=${formData.amount}&cu=INR&tn=${formData.message}`;

@@ -9,6 +9,7 @@ import './AdminDashboard.css';
 import Yatra2025ManagementPage from './7Yatra2025ManagementPage';
 import PaymentManagementPage from './PaymentManagementPage';
 import Yatra2025VaiyavachManagementPage from './7Yatra2025VaiyavachManagementPage';
+import PaintingRegistrationManagementPage from './PaintingRegistrationManagementPage';
 
 // Curated color palette for charts, matching the UI
 const CHART_COLORS = [
@@ -35,11 +36,15 @@ const AdminDashboard = () => {
   const [yatraSummary, setYatraSummary] = useState({ totalRecords: 0, oldCategoryCount: 0, newCategoryCount: 0 });
   const [paymentSummary, setPaymentSummary] = useState({ paid: 0, unpaid: 0 });
   const [vaiyavachSummary, setVaiyavachSummary] = useState({ totalRecords: 0, twoDaysCount: 0, fourDaysCount: 0 });
+  const [paintingSummary, setPaintingSummary] = useState({ totalCount: 0, byPaintingType: [] });
+  const [paintingAgeSummary, setPaintingAgeSummary] = useState({ totalCount: 0, byAgeGroup: [] });
   const [loadingDonations, setLoadingDonations] = useState(true);
   const [loadingRegistrations, setLoadingRegistrations] = useState(true);
   const [loadingYatra, setLoadingYatra] = useState(true);
   const [loadingPayments, setLoadingPayments] = useState(true);
   const [loadingVaiyavach, setLoadingVaiyavach] = useState(true);
+  const [loadingPainting, setLoadingPainting] = useState(true);
+  const [loadingPaintingAge, setLoadingPaintingAge] = useState(true);
   const navigate = useNavigate();
   const username = localStorage.getItem('username') || 'Admin';
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -100,11 +105,35 @@ const AdminDashboard = () => {
       setLoadingVaiyavach(false);
     };
 
+    const fetchPaintingSummary = async () => {
+      setLoadingPainting(true);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/painting_rssm/summary`);
+        setPaintingSummary(res.data);
+      } catch (error) {
+        setPaintingSummary({ totalCount: 0, byPaintingType: [] });
+      }
+      setLoadingPainting(false);
+    };
+
+    const fetchPaintingAgeSummary = async () => {
+      setLoadingPaintingAge(true);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/painting_rssm/summarybyagegroup`);
+        setPaintingAgeSummary(res.data);
+      } catch (error) {
+        setPaintingAgeSummary({ totalCount: 0, byAgeGroup: [] });
+      }
+      setLoadingPaintingAge(false);
+    };
+
     fetchDonationSummary();
     fetchRegistrationSummary();
     fetchYatraSummary();
     fetchPaymentSummary();
     fetchVaiyavachSummary();
+    fetchPaintingSummary();
+    fetchPaintingAgeSummary();
   }, []);
 
   // Prepare donut data for donations
@@ -135,6 +164,14 @@ const AdminDashboard = () => {
     { category: '2 Days', count: vaiyavachSummary.twoDaysCount },
     { category: '4 Days', count: vaiyavachSummary.fourDaysCount },
   ];
+
+  const paintingDonutData = paintingSummary.byPaintingType.length > 0
+    ? paintingSummary.byPaintingType
+    : [{ paintingType: 'No Registrations', count: paintingSummary.totalCount }];
+
+  const paintingAgeDonutData = paintingAgeSummary.byAgeGroup.length > 0
+    ? paintingAgeSummary.byAgeGroup
+    : [{ ageGroup: 'No Registrations', count: paintingAgeSummary.totalCount }];
 
   const donutCharts = [
     {
@@ -187,6 +224,16 @@ const AdminDashboard = () => {
       knowMore: () => navigate('/admin/paymentmanagement'),
       totalSuffix: ''
     },
+    {
+      label: 'Painting Registrations (Age Group)',
+      key: 'paintingAge',
+      data: paintingAgeDonutData,
+      dataKey: 'count',
+      nameKey: 'ageGroup',
+      total: paintingAgeSummary.totalCount,
+      knowMore: () => navigate('/admin/painting-registrations'),
+      totalSuffix: ''
+    },
   ].map((item, idx) => (
     <div className="donut-chart-box" key={item.key}>
       <ResponsiveContainer width="100%" height={200}>
@@ -225,7 +272,7 @@ const AdminDashboard = () => {
               marginRight: 6,
               border: '1px solid #ccc'
             }} />
-            <span style={{ fontSize: 13, color: '#333', fontWeight: 500 }}>{entry.category}</span>
+            <span style={{ fontSize: 13, color: '#333', fontWeight: 500 }}>{entry.ageGroup || entry.category}</span>
           </div>
         ))}
       </div>
@@ -247,7 +294,7 @@ const AdminDashboard = () => {
         <div className="admin-main-content">
           <Typography variant="h3" className="welcome-title">Welcome {username.toLowerCase()},</Typography>
           <div className="donut-row">
-            {loadingDonations || loadingRegistrations || loadingYatra || loadingPayments || loadingVaiyavach ? <CircularProgress /> : donutCharts}
+            {loadingDonations || loadingRegistrations || loadingYatra || loadingPayments || loadingVaiyavach || loadingPainting || loadingPaintingAge ? <CircularProgress /> : donutCharts}
           </div>
         </div>
       </div>
