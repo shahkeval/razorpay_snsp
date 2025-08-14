@@ -161,7 +161,7 @@ const EventDetails = () => {
   const [razorpayLoading, setRazorpayLoading] = useState(false);
   const [razorpayError, setRazorpayError] = useState("");
   const [orderFeeDetails, setOrderFeeDetails] = useState(null);
-  const [paymentStatus, setPaymentStatus] = useState('idle'); // idle | verifying | success | error
+  const [paymentStatus, setPaymentStatus] = useState("idle"); // idle | verifying | success | error
   const [paymentError, setPaymentError] = useState("");
 
   // Add state for payment link
@@ -182,15 +182,19 @@ const EventDetails = () => {
 
   // Enum-like object for payment status types
   const PaymentStatusType = {
-    PAID: 'paid',
-    CANCELLED: 'cancelled',
-    FAILED: 'failed',
+    PAID: "paid",
+    CANCELLED: "cancelled",
+    FAILED: "failed",
   };
 
   // useEffect to check payment status from Razorpay query param
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
-    const paymentStatus = searchParams.get('razorpay_payment_link_status');
+    const element = document.getElementById("thankTop");
+        if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    const paymentStatus = searchParams.get("razorpay_payment_link_status");
     if (paymentStatus) {
       if (paymentStatus === PaymentStatusType.PAID) {
         setPaymentStatusDialog(PaymentStatusType.PAID);
@@ -214,25 +218,32 @@ const EventDetails = () => {
       params.razorpay_signature &&
       params.razorpay_payment_link_status
     ) {
-      setPaymentStatus('verifying');
+      setPaymentStatus("verifying");
       // Call backend to verify payment using payment_link_id
       const paymentLinkId = params.razorpay_payment_link_id;
       let pollCount = 0;
       const poll = setInterval(async () => {
         try {
-          const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/yatriks/verify-payment?orderId=${paymentLinkId}`);
-          if (res.data.status === 'paid') {
-            setPaymentStatus('paid');
+          const res = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/yatriks/verify-payment?orderId=${paymentLinkId}`
+          );
+          if (res.data.status === "paid") {
+            setPaymentStatus("paid");
             setPaymentThankYou(true);
             clearInterval(poll);
-          } else if (pollCount > 15) { // Timeout after ~1min
-            setPaymentStatus('error');
-            setPaymentError('Payment verification failed. Please refresh or Please contact support. Phone:-7383120787');
+          } else if (pollCount > 15) {
+            // Timeout after ~1min
+            setPaymentStatus("error");
+            setPaymentError(
+              "Payment verification failed. Please refresh or Please contact support. Phone:-7383120787"
+            );
             clearInterval(poll);
           }
         } catch (err) {
-          setPaymentStatus('error');
-          setPaymentError('Payment verification failed. Please refresh or Please contact support. Phone:-7383120787');
+          setPaymentStatus("error");
+          setPaymentError(
+            "Payment verification failed. Please refresh or Please contact support. Phone:-7383120787"
+          );
           clearInterval(poll);
         }
         pollCount++;
@@ -246,7 +257,8 @@ const EventDetails = () => {
     // Check for Razorpay payment params in URL
     const params = getQueryParams(location.search);
     // Only run if user came from Vaiyavach payment (sessionStorage or param)
-    const isVaiyavach = sessionStorage.getItem('vaiyavachNo') || params.vaiyavach === '1';
+    const isVaiyavach =
+      sessionStorage.getItem("vaiyavachNo") || params.vaiyavach === "1";
     if (
       isVaiyavach &&
       params.razorpay_payment_id &&
@@ -254,23 +266,30 @@ const EventDetails = () => {
       params.razorpay_signature &&
       params.razorpay_payment_link_status
     ) {
-      setPaymentStatus('verifying');
+      setPaymentStatus("verifying");
       let pollCount = 0;
       const poll = setInterval(async () => {
         try {
-          const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/vaiyavach/verifyvaiyavachpayment?orderId=${params.razorpay_payment_link_id}`);
-          if (res.data.status === 'paid') {
-            setPaymentStatus('paid');
+          const res = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/vaiyavach/verifyvaiyavachpayment?orderId=${params.razorpay_payment_link_id}`
+          );
+          if (res.data.status === "paid") {
+            setPaymentStatus("paid");
             setVaiyavachPaymentThankYou(true);
             clearInterval(poll);
-          } else if (pollCount > 15) { // Timeout after ~1min
-            setPaymentStatus('error');
-            setPaymentError('Payment verification failed. Please refresh or Please contact support. Phone:-7383120787');
+          } else if (pollCount > 15) {
+            // Timeout after ~1min
+            setPaymentStatus("error");
+            setPaymentError(
+              "Payment verification failed. Please refresh or Please contact support. Phone:-7383120787"
+            );
             clearInterval(poll);
           }
         } catch (err) {
-          setPaymentStatus('error');
-          setPaymentError('Payment verification failed. Please refresh or Please contact support. Phone:-7383120787');
+          setPaymentStatus("error");
+          setPaymentError(
+            "Payment verification failed. Please refresh or Please contact support. Phone:-7383120787"
+          );
           clearInterval(poll);
         }
         pollCount++;
@@ -307,37 +326,47 @@ const EventDetails = () => {
 
   // 1. Store registration data and image in localStorage as user fills form
   useEffect(() => {
-    localStorage.setItem('yatrikRegistrationData', JSON.stringify(yatraRegistrationData));
+    localStorage.setItem(
+      "yatrikRegistrationData",
+      JSON.stringify(yatraRegistrationData)
+    );
   }, [yatraRegistrationData]);
   useEffect(() => {
     if (yatraRegistrationData.yatrikPhoto) {
-      localStorage.setItem('yatrikPhoto', yatraRegistrationData.yatrikPhoto);
+      localStorage.setItem("yatrikPhoto", yatraRegistrationData.yatrikPhoto);
     }
   }, [yatraRegistrationData.yatrikPhoto]);
 
   // Place this useEffect at the top level, not inside any condition
   useEffect(() => {
     // Only run polling if on the callback page
-    if (window.location.pathname.includes('yatrik-payment-callback')) {
-      setPaymentStatus('verifying');
-      const yatrikNo = sessionStorage.getItem('yatrikNo');
-      const orderId = sessionStorage.getItem('orderId');
+    if (window.location.pathname.includes("yatrik-payment-callback")) {
+      setPaymentStatus("verifying");
+      const yatrikNo = sessionStorage.getItem("yatrikNo");
+      const orderId = sessionStorage.getItem("orderId");
       let pollCount = 0;
       const poll = setInterval(async () => {
         try {
-          const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/yatriks/verify-payment?yatrikNo=${yatrikNo}&orderId=${orderId}`);
-          if (res.data.status === 'paid') {
-            setPaymentStatus('paid');
+          const res = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/yatriks/verify-payment?yatrikNo=${yatrikNo}&orderId=${orderId}`
+          );
+          if (res.data.status === "paid") {
+            setPaymentStatus("paid");
             setPaymentThankYou(true);
             clearInterval(poll);
-          } else if (pollCount > 15) { // Timeout after ~1min
-            setPaymentStatus('error');
-            setPaymentError('Payment verification timed out. Please contact support.');
+          } else if (pollCount > 15) {
+            // Timeout after ~1min
+            setPaymentStatus("error");
+            setPaymentError(
+              "Payment verification timed out. Please contact support."
+            );
             clearInterval(poll);
           }
         } catch (err) {
-          setPaymentStatus('error');
-          setPaymentError('Payment verification failed. Please contact support.');
+          setPaymentStatus("error");
+          setPaymentError(
+            "Payment verification failed. Please contact support."
+          );
           clearInterval(poll);
         }
         pollCount++;
@@ -691,16 +720,16 @@ const EventDetails = () => {
 
   // Add modal overlay styles
   const overlayStyle = {
-    position: 'fixed',
+    position: "fixed",
     top: 0,
     left: 0,
-    width: '100vw',
-    height: '100vh',
-    background: 'rgba(255,255,255,0.85)',
+    width: "100vw",
+    height: "100vh",
+    background: "rgba(255,255,255,0.85)",
     zIndex: 9999,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   };
 
   // 2. Pay Now handler (new flow)
@@ -709,38 +738,66 @@ const EventDetails = () => {
     setIsSubmittingRegistration(true);
     try {
       const formData = new FormData();
-      formData.append('yatrikPhoto', yatraRegistrationData.yatrikPhoto);
-      formData.append('name', yatraRegistrationData.fullName);
-      formData.append('mobileNumber', yatraRegistrationData.phone);
-      formData.append('whatsappNumber', yatraRegistrationData.whatsappNumber);
-      formData.append('emailAddress', yatraRegistrationData.email);
-      formData.append('education', yatraRegistrationData.education);
-      formData.append('religiousEducation', yatraRegistrationData.religiousEducation);
-      formData.append('weight', yatraRegistrationData.weight);
-      formData.append('height', yatraRegistrationData.height);
-      formData.append('dob', yatraRegistrationData.dateOfBirth);
-      formData.append('address', yatraRegistrationData.address);
-      formData.append('city', yatraRegistrationData.city);
-      formData.append('state', yatraRegistrationData.state);
-      formData.append('familyMemberName', yatraRegistrationData.familyMemberName);
-      formData.append('relation', yatraRegistrationData.familyMemberRelation);
-      formData.append('familyMemberWANumber', yatraRegistrationData.familyMemberWhatsapp);
-      formData.append('emergencyNumber', yatraRegistrationData.emergencyNumber);
-      formData.append('is7YatraDoneEarlier', yatraRegistrationData.done7YatraEarlier);
-      formData.append('earlier7YatraCounts', yatraRegistrationData.howManyTimes);
-      formData.append('howToReachPalitana', yatraRegistrationData.howToReachPalitana);
-      formData.append('yatrikConfirmation', yatraRegistrationData.yatrikConfirmation);
-      formData.append('familyConfirmation', yatraRegistrationData.familyConfirmation);
+      formData.append("yatrikPhoto", yatraRegistrationData.yatrikPhoto);
+      formData.append("name", yatraRegistrationData.fullName);
+      formData.append("mobileNumber", yatraRegistrationData.phone);
+      formData.append("whatsappNumber", yatraRegistrationData.whatsappNumber);
+      formData.append("emailAddress", yatraRegistrationData.email);
+      formData.append("education", yatraRegistrationData.education);
+      formData.append(
+        "religiousEducation",
+        yatraRegistrationData.religiousEducation
+      );
+      formData.append("weight", yatraRegistrationData.weight);
+      formData.append("height", yatraRegistrationData.height);
+      formData.append("dob", yatraRegistrationData.dateOfBirth);
+      formData.append("address", yatraRegistrationData.address);
+      formData.append("city", yatraRegistrationData.city);
+      formData.append("state", yatraRegistrationData.state);
+      formData.append(
+        "familyMemberName",
+        yatraRegistrationData.familyMemberName
+      );
+      formData.append("relation", yatraRegistrationData.familyMemberRelation);
+      formData.append(
+        "familyMemberWANumber",
+        yatraRegistrationData.familyMemberWhatsapp
+      );
+      formData.append("emergencyNumber", yatraRegistrationData.emergencyNumber);
+      formData.append(
+        "is7YatraDoneEarlier",
+        yatraRegistrationData.done7YatraEarlier
+      );
+      formData.append(
+        "earlier7YatraCounts",
+        yatraRegistrationData.howManyTimes
+      );
+      formData.append(
+        "howToReachPalitana",
+        yatraRegistrationData.howToReachPalitana
+      );
+      formData.append(
+        "yatrikConfirmation",
+        yatraRegistrationData.yatrikConfirmation
+      );
+      formData.append(
+        "familyConfirmation",
+        yatraRegistrationData.familyConfirmation
+      );
       // Send to backend to create payment link
-      const res = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/yatriks/create-payment-link`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/yatriks/create-payment-link`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
       const { paymentLink, yatrikNo, orderId } = res.data;
       // Store yatrikNo/orderId in session for callback polling
-      sessionStorage.setItem('yatrikNo', yatrikNo);
-      sessionStorage.setItem('orderId', orderId);
+      sessionStorage.setItem("yatrikNo", yatrikNo);
+      sessionStorage.setItem("orderId", orderId);
       // Redirect to payment link
       window.location.href = paymentLink;
     } catch (err) {
-      alert('Failed to initiate payment. Please try again.');
+      alert("Failed to initiate payment. Please try again.");
       setIsSubmittingRegistration(false);
     }
   };
@@ -906,39 +963,144 @@ const EventDetails = () => {
             )}
           </div>
 
-          <div className="registration-container">
+          <div className="registration-container" id="thankTop">
             <div className="registration-child">
               {/* Show only one of: loader, dialog, or form */}
-              {paymentStatus === 'verifying' ? (
+              {paymentStatus === "verifying" ? (
                 // Loader for payment verification
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', padding: '2rem 1rem' }}>
-                  <div style={{ background: '#e3f2fd', border: '1px solid #90caf9', borderRadius: '12px', padding: '2rem 2.5rem', textAlign: 'center', boxShadow: '0 2px 8px rgba(7,94,84,0.07)' }}>
-                    <span className="loader" style={{ marginRight: 12, verticalAlign: 'middle' }}></span>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: "300px",
+                    padding: "2rem 1rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      background: "#e3f2fd",
+                      border: "1px solid #90caf9",
+                      borderRadius: "12px",
+                      padding: "2rem 2.5rem",
+                      textAlign: "center",
+                      boxShadow: "0 2px 8px rgba(7,94,84,0.07)",
+                    }}
+                  >
+                    <span
+                      className="loader"
+                      style={{ marginRight: 12, verticalAlign: "middle" }}
+                    ></span>
                     We are verifying your payment, please wait...
                   </div>
                 </div>
-              ) : paymentStatus === 'paid' ? (
+              ) : paymentStatus === "paid" ? (
                 // Thank you dialog (only if paymentStatus is 'paid')
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', padding: '2rem 1rem' }}>
-                  <div style={{ background: '#e8f5e9', border: '1px solid #43a047', borderRadius: '12px', padding: '2rem 2.5rem', textAlign: 'center', boxShadow: '0 2px 8px rgba(67,160,71,0.07)' }}>
-                    <div style={{ fontSize: '2rem', color: '#43a047', marginBottom: '1rem' }}>&#10003;</div>
-                    <h2 style={{ color: '#2e7d32', marginBottom: '0.5rem' }}>Thank you for your registration!</h2>
-                    <div style={{ fontSize: '1.1rem', color: '#333', marginBottom: '1.5rem' }}>
-                      We have received your payment and details.<br />We will contact you with more information soon.
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: "300px",
+                    padding: "2rem 1rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      background: "#e8f5e9",
+                      border: "1px solid #43a047",
+                      borderRadius: "12px",
+                      padding: "2rem 2.5rem",
+                      textAlign: "center",
+                      boxShadow: "0 2px 8px rgba(67,160,71,0.07)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "2rem",
+                        color: "#43a047",
+                        marginBottom: "1rem",
+                      }}
+                    >
+                      &#10003;
                     </div>
-                    <button onClick={handleAddAnotherResponse} style={{ background: '#43a047', color: 'white', border: 'none', borderRadius: '25px', padding: '0.8rem 1.5rem', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', transition: 'background 0.2s' }}>
+                    <h2 style={{ color: "#2e7d32", marginBottom: "0.5rem" }}>
+                      Thank you for your registration!
+                    </h2>
+                    <div
+                      style={{
+                        fontSize: "1.1rem",
+                        color: "#333",
+                        marginBottom: "1.5rem",
+                      }}
+                    >
+                      We have received your payment and details.
+                      <br />
+                      We will contact you with more information soon.
+                    </div>
+                    <button
+                      onClick={handleAddAnotherResponse}
+                      style={{
+                        background: "#43a047",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "25px",
+                        padding: "0.8rem 1.5rem",
+                        fontWeight: 600,
+                        fontSize: "1rem",
+                        cursor: "pointer",
+                        transition: "background 0.2s",
+                      }}
+                    >
                       Add Another Response
                     </button>
                   </div>
                 </div>
-              ) : paymentStatus === 'error' ? (
+              ) : paymentStatus === "error" ? (
                 // Error dialog (only if paymentStatus is 'error')
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', padding: '2rem 1rem' }}>
-                  <div style={{ background: '#ffebee', border: '1px solid #e53935', borderRadius: '12px', padding: '2rem 2.5rem', textAlign: 'center', boxShadow: '0 2px 8px rgba(229,57,53,0.07)' }}>
-                    <div style={{ fontSize: '2rem', color: '#e53935', marginBottom: '1rem' }}>&#10007;</div>
-                    <h2 style={{ color: '#b71c1c', marginBottom: '0.5rem' }}>Payment Verification Failed</h2>
-                    <div style={{ fontSize: '1.1rem', color: '#b71c1c', marginBottom: '1.5rem' }}>
-                      {paymentError || 'Payment verification failed. Please try again or contact support.'}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: "300px",
+                    padding: "2rem 1rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      background: "#ffebee",
+                      border: "1px solid #e53935",
+                      borderRadius: "12px",
+                      padding: "2rem 2.5rem",
+                      textAlign: "center",
+                      boxShadow: "0 2px 8px rgba(229,57,53,0.07)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "2rem",
+                        color: "#e53935",
+                        marginBottom: "1rem",
+                      }}
+                    >
+                      &#10007;
+                    </div>
+                    <h2 style={{ color: "#b71c1c", marginBottom: "0.5rem" }}>
+                      Payment Verification Failed
+                    </h2>
+                    <div
+                      style={{
+                        fontSize: "1.1rem",
+                        color: "#b71c1c",
+                        marginBottom: "1.5rem",
+                      }}
+                    >
+                      {paymentError ||
+                        "Payment verification failed. Please try again or contact support."}
                     </div>
                   </div>
                 </div>
@@ -950,8 +1112,8 @@ const EventDetails = () => {
                       <i className="icon-check"></i>
                       <h3>Thank You!</h3>
                       <p>
-                        Your registration has been submitted successfully. We will
-                        contact you with more details soon.
+                        Your registration has been submitted successfully. We
+                        will contact you with more details soon.
                       </p>
                       <button
                         onClick={handleSubmitAnotherForm}
@@ -1004,12 +1166,14 @@ const EventDetails = () => {
                                 <br />
                                 Registration for this event is now closed.
                                 <br />
-                                <span style={{ color: "#075e54", fontWeight: 600 }}>
+                                <span
+                                  style={{ color: "#075e54", fontWeight: 600 }}
+                                >
                                   Want updates on our next events?
                                 </span>
                                 <br />
-                                Join our WhatsApp group below to stay informed and
-                                connected.
+                                Join our WhatsApp group below to stay informed
+                                and connected.
                               </p>
                               <p
                                 style={{
@@ -1026,9 +1190,11 @@ const EventDetails = () => {
                                 <br />
                                 આ કાર્યક્રમ માટે નોંધણી હવે બંધ છે.
                                 <br />
-                                <span style={{ color: "#075e54", fontWeight: 600 }}>
-                                  શું તમે અમારી આગામી કાર્યક્રમો વિશે અપડેટ્સ મેળવવા
-                                  માંગો છો?
+                                <span
+                                  style={{ color: "#075e54", fontWeight: 600 }}
+                                >
+                                  શું તમે અમારી આગામી કાર્યક્રમો વિશે અપડેટ્સ
+                                  મેળવવા માંગો છો?
                                 </span>
                                 <br />
                                 માહિતી અને સંપર્કમાં રહેવા માટે નીચે આપેલા અમારા
@@ -1055,7 +1221,8 @@ const EventDetails = () => {
                                     cursor: "pointer",
                                     marginBottom: 8,
                                     transition: "box-shadow 0.2s",
-                                    boxShadow: "0 2px 8px rgba(37,211,102,0.15)",
+                                    boxShadow:
+                                      "0 2px 8px rgba(37,211,102,0.15)",
                                   }}
                                 />
                                 <span
@@ -1278,7 +1445,9 @@ const EventDetails = () => {
                                           type="radio"
                                           name="registrationType"
                                           value="yatrik"
-                                          checked={registrationType === "yatrik"}
+                                          checked={
+                                            registrationType === "yatrik"
+                                          }
                                           onChange={() =>
                                             setRegistrationType("yatrik")
                                           }
@@ -1296,7 +1465,9 @@ const EventDetails = () => {
                                           type="radio"
                                           name="registrationType"
                                           value="vaiyavach"
-                                          checked={registrationType === "vaiyavach"}
+                                          checked={
+                                            registrationType === "vaiyavach"
+                                          }
                                           onChange={() =>
                                             setRegistrationType("vaiyavach")
                                           }
@@ -1309,10 +1480,16 @@ const EventDetails = () => {
                               )}
                               {/* Step 2: Yatrik or Vaiyavach Form */}
                               {registrationType === "yatrik" && (
-                                <YatrikForm2025 event={event} onComplete={() => setRegistrationType("")} />
+                                <YatrikForm2025
+                                  event={event}
+                                  onComplete={() => setRegistrationType("")}
+                                />
                               )}
                               {registrationType === "vaiyavach" && (
-                                <VaiyavachForm2025 event={event} onComplete={() => setRegistrationType("")} />
+                                <VaiyavachForm2025
+                                  event={event}
+                                  onComplete={() => setRegistrationType("")}
+                                />
                               )}
                             </div>
                           ) : event.id === "painting-competition" ? (
@@ -1371,7 +1548,9 @@ const EventDetails = () => {
                                 />
                               </div>
                               <div className="form-group">
-                                <label htmlFor="message">Additional Message</label>
+                                <label htmlFor="message">
+                                  Additional Message
+                                </label>
                                 <textarea
                                   id="message"
                                   name="message"

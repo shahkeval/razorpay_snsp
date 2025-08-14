@@ -215,6 +215,10 @@ const YatrikForm2025 = ({ event, onComplete }) => {
       ...prev,
       progress: prev.progress + 25,
     }));
+    const element = document.getElementById("yatriktop");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
   const prevStep = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
@@ -222,6 +226,10 @@ const YatrikForm2025 = ({ event, onComplete }) => {
       ...prev,
       progress: prev.progress - 25,
     }));
+    const element = document.getElementById("yatriktop");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
   const handleAddAnotherResponse = () => {
     setPaymentThankYou(false);
@@ -338,7 +346,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
   };
 
   return (
-    <div>
+    <div id="yatriktop">
       {/* Back arrow to go back to radio selection */}
       <button
         type="button"

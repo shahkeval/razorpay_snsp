@@ -17,6 +17,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.5.0",
     "multer": "^2.0.1",
+    "node-cron": "^4.2.1",
     "razorpay": "^2.8.2"
   },
   "devDependencies": {

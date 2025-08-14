@@ -5,7 +5,65 @@ const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Payment = require("../models/Payment");
 const fs = require("fs");
-const { sendWhatsAppTemplate } = require("../utils");
+const { sendWhatsAppTemplateForSuccess ,sendWhatsAppTemplateForNotPaidFee} = require("../utils");
+// Scheduler for sending WhatsApp reminders every 5 minutes
+// Scheduler for sending WhatsApp reminders every 5 minutes
+const REMINDER_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const REMINDER_MINUTES = 60;
+
+async function sendUnpaidReminders() {
+  try {
+    const cutoff = new Date(Date.now() - REMINDER_MINUTES * 60 * 1000);
+    const unpaidRecords = await Vaiyavachi.find({
+      isPaid: "unpaid",
+      reminderSent: { $ne: true },
+      createdAt: { $lte: cutoff },
+    });
+
+    if (unpaidRecords.length === 0) {
+      console.log("No unpaid Vaiyavachi records found for reminder.");
+      return;
+    }
+
+    let sentCount = 0;
+
+    for (const record of unpaidRecords) {
+      try {
+        // Send WhatsApp message
+        await sendWhatsAppTemplateForNotPaidFee(record.mobileNumber, [
+          record.name,
+          "Vaiyavach",
+        ]);
+
+        // Update record after message is sent
+        await Vaiyavachi.updateOne(
+          { _id: record._id },
+          {
+            $set: {
+              reminderSent: true,
+              isConfoirmSeat: false, // Updating seat confirmation status
+            },
+          }
+        );
+
+        sentCount++;
+      } catch (err) {
+        console.error(
+          "Failed to send WhatsApp reminder for Vaiyavachi:",
+          record._id,
+          err
+        );
+      }
+    }
+
+    console.log(`WhatsApp reminders sent: ${sentCount}`);
+  } catch (err) {
+    console.error("Error in unpaid reminder scheduler:", err);
+  }
+}
+
+setInterval(sendUnpaidReminders, REMINDER_INTERVAL_MS);
+
 
 // Multer storage config for vaiyavachi image
 const storage = multer.diskStorage({
@@ -174,7 +232,7 @@ exports.createPaymentLink = [
       console.log(Date.now());
       console.log("hello time is this please check ", expireBy); // 16 minutes from now (buffer for server time skew)
       const paymentLink = await razorpay.paymentLink.create({
-        amount: 1000, // Rs. 500.00 in paise
+        amount: 50000, // Rs. 500.00 in paise
         currency: "INR",
         accept_partial: false,
         description: "Donation for 7 Yatra",
@@ -188,7 +246,7 @@ exports.createPaymentLink = [
           email: true,
         },
         callback_url: process.env.PAYMENT_CALLBACK_URL, // e.g. https://yourdomain.com/payment-redirect
-        callback_method: 'get',
+        callback_method: "get",
         reference_id: newVaiyavachi._id.toString(),
         expire_by: expireBy, // <-- 16 minute expiry (buffered)
         notes: {
@@ -328,7 +386,8 @@ exports.verifyPayment = async (req, res) => {
           vaiyavachNo: payment.vaiyavachiNo,
         });
         if (vaiyavachi) {
-          sendWhatsAppTemplate(vaiyavachi.whatsappNumber, [
+          debugger;
+          sendWhatsAppTemplateForSuccess(vaiyavachi.whatsappNumber, [
             "Vaiyavach",
             vaiyavachi.name,
             payment.vaiyavachiNo,
@@ -469,13 +528,20 @@ exports.getTypeValueCounts = async (req, res) => {
   try {
     const pipeline = [
       {
+        $match: {
+          isConfoirmSeat: true, // Only include confirmed seat records
+        },
+      },
+      {
         $group: {
           _id: { type: "$typeOfVaiyavach", value: "$valueOfVaiyavach" },
           count: { $sum: 1 },
         },
       },
     ];
+
     const results = await Vaiyavachi.aggregate(pipeline);
+
     // Format result as { type: { value: count } }
     const counts = {};
     results.forEach(({ _id, count }) => {
@@ -483,11 +549,13 @@ exports.getTypeValueCounts = async (req, res) => {
       if (!counts[type]) counts[type] = {};
       counts[type][value] = count;
     });
+
     res.json(counts);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // New summary endpoint for howToReachPalitana and typeOfVaiyavach
 exports.getVaiyavachiTypeSummary = async (req, res) => {

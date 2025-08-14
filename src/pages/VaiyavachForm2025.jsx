@@ -66,6 +66,12 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
         .then((res) => setTypeValueCounts(res.data || {}))
         .catch(() => setTypeValueCounts({}));
     }
+    if (vaiyavachCurrentStep === 5) {
+      const element = document.getElementById("formTop");
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
   }, [vaiyavachCurrentStep]);
 
   // Handlers
@@ -97,7 +103,7 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
         const age = Math.floor(
           (Date.now() - new Date(value)) / (365.25 * 24 * 60 * 60 * 1000)
         );
-        if (age < 12) error = "Age must be at least 12";
+        if (age < 12) error = "Age must be at least 12 years";
       }
     }
     if (name === "address") {
@@ -205,9 +211,17 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
     setVaiyavachErrors(errors);
     if (Object.values(errors).some(Boolean)) return;
     setVaiyavachCurrentStep((prev) => Math.min(prev + 1, 5));
+    const element = document.getElementById("formTop");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
   const vaiyavachPrevStep = () => {
     setVaiyavachCurrentStep((prev) => Math.max(prev - 1, 1));
+    const element = document.getElementById("formTop");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
   const handleVaiyavachRegistrationSubmit = async (e) => {
     e.preventDefault();
@@ -337,7 +351,7 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
   // Return the full multi-step Vaiyavach registration form JSX (same as in EventDetails.jsx)
   // ... (Paste the JSX for the Vaiyavach form here, using the above state/handlers)
   return (
-    <div>
+    <div id="formTop">
       {/* Back arrow to go back to radio selection */}
       <button
         type="button"
@@ -852,7 +866,7 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
             <div
               style={{
                 display: "flex",
-                gap: "2rem",
+                gap: "0.5rem",
                 margin: "0.5rem 0 1rem 0",
               }}
             >
@@ -1263,7 +1277,7 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
       )}
       {/* Thank You Message */}
       {vaiyavachCurrentStep === 5 && vaiyavachPaymentThankYou && (
-        <div
+        <div id="ThankForm"
           style={{
             display: "flex",
             flexDirection: "column",

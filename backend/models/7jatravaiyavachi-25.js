@@ -31,6 +31,8 @@ const vaiyavachiSchema = new mongoose.Schema({
     isPaid: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid', required: true },
     paymentLink: { type: String },
     isActive: { type: Boolean, default: true },
+    reminderSent: {type: Boolean, default: false},
+    isConfoirmSeat: {type: Boolean,default: true},
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });
