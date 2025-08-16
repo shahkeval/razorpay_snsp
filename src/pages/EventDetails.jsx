@@ -527,7 +527,7 @@ const EventDetails = () => {
     // Show thank you message for payment step
     if (currentStep === 5) {
       // Only for 7-YATRA-2025, submit to backend
-      if (event.id === "7-YATRA-2025") {
+      if (event.id === "7-YATRA-2026") {
         try {
           const formData = new FormData();
           formData.append("yatrikPhoto", yatraRegistrationData.yatrikPhoto);
@@ -1397,7 +1397,7 @@ const EventDetails = () => {
                         </>
                       ) : (
                         <>
-                          {event.id === "7-YATRA-2025" ? (
+                          {event.id === "7-YATRA-2026" ? (
                             <div>
                               {/* Step 1: Type Selection */}
                               {registrationType === "" && (

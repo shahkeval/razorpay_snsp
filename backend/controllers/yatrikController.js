@@ -11,62 +11,62 @@ const {
   sendWhatsAppTemplateForSuccess,
 } = require("../utils");
 
-// Scheduler for sending WhatsApp reminders every 5 minutes
-const REMINDER_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
-const REMINDER_MINUTES = 60;
+// // Scheduler for sending WhatsApp reminders every 5 minutes
+// const REMINDER_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+// const REMINDER_MINUTES = 60;
 
-async function sendUnpaidReminders() {
-  try {
-    const cutoff = new Date(Date.now() - REMINDER_MINUTES * 60 * 1000);
-    const unpaidRecords = await Yatrik.find({
-      isPaid: "unpaid",
-      reminderSent: { $ne: true },
-      createdAt: { $lte: cutoff },
-    });
+// async function sendUnpaidReminders() {
+//   try {
+//     const cutoff = new Date(Date.now() - REMINDER_MINUTES * 60 * 1000);
+//     const unpaidRecords = await Yatrik.find({
+//       isPaid: "unpaid",
+//       reminderSent: { $ne: true },
+//       createdAt: { $lte: cutoff },
+//     });
 
-    if (unpaidRecords.length === 0) {
-      console.log("No unpaid yatrik records found for reminder.");
-      return;
-    }
+//     if (unpaidRecords.length === 0) {
+//       console.log("No unpaid yatrik records found for reminder.");
+//       return;
+//     }
 
-    let sentCount = 0;
+//     let sentCount = 0;
 
-    for (const record of unpaidRecords) {
-      try {
-        // Send WhatsApp message
-        await sendWhatsAppTemplateForNotPaidFee(record.mobileNumber, [
-          record.name,
-          "Yatrik",
-        ]);
+//     for (const record of unpaidRecords) {
+//       try {
+//         // Send WhatsApp message
+//         await sendWhatsAppTemplateForNotPaidFee(record.mobileNumber, [
+//           record.name,
+//           "Yatrik",
+//         ]);
 
-        // Update record after message is sent
-        await Yatrik.updateOne(
-          { _id: record._id },
-          {
-            $set: {
-              reminderSent: true,
-              isConfoirmSeat: false, // Updating seat confirmation status
-            },
-          }
-        );
+//         // Update record after message is sent
+//         await Yatrik.updateOne(
+//           { _id: record._id },
+//           {
+//             $set: {
+//               reminderSent: true,
+//               isConfoirmSeat: false, // Updating seat confirmation status
+//             },
+//           }
+//         );
 
-        sentCount++;
-      } catch (err) {
-        console.error(
-          "Failed to send WhatsApp reminder for yatrik:",
-          record._id,
-          err
-        );
-      }
-    }
+//         sentCount++;
+//       } catch (err) {
+//         console.error(
+//           "Failed to send WhatsApp reminder for yatrik:",
+//           record._id,
+//           err
+//         );
+//       }
+//     }
 
-    console.log(`WhatsApp reminders sent: ${sentCount}`);
-  } catch (err) {
-    console.error("Error in unpaid reminder scheduler:", err);
-  }
-}
+//     console.log(`WhatsApp reminders sent: ${sentCount}`);
+//   } catch (err) {
+//     console.error("Error in unpaid reminder scheduler:", err);
+//   }
+// }
 
-setInterval(sendUnpaidReminders, REMINDER_INTERVAL_MS);
+// setInterval(sendUnpaidReminders, REMINDER_INTERVAL_MS);
 
 // Multer storage config for yatrik photo
 const storage = multer.diskStorage({
@@ -387,16 +387,16 @@ exports.verifyPayment = async (req, res) => {
 
         //whatsapp
         debugger;
-        const yatrik = await Yatrik.findOne({
-          yatrikNo: payment.yatrikNo,
-        });
-        if (yatrik) {
-          sendWhatsAppTemplateForSuccess(yatrik.whatsappNumber, [
-            "Yatrik",
-            yatrik.name,
-            payment.yatrikNo,
-          ]);
-        }
+        // const yatrik = await Yatrik.findOne({
+        //   yatrikNo: payment.yatrikNo,
+        // });
+        // if (yatrik) {
+        //   sendWhatsAppTemplateForSuccess(yatrik.whatsappNumber, [
+        //     "Yatrik",
+        //     yatrik.name,
+        //     payment.yatrikNo,
+        //   ]);
+        // }
 
         // console.log("14");
       }

@@ -6,63 +6,63 @@ const crypto = require("crypto");
 const Payment = require("../models/Payment");
 const fs = require("fs");
 const { sendWhatsAppTemplateForSuccess ,sendWhatsAppTemplateForNotPaidFee} = require("../utils");
-// Scheduler for sending WhatsApp reminders every 5 minutes
-// Scheduler for sending WhatsApp reminders every 5 minutes
-const REMINDER_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
-const REMINDER_MINUTES = 60;
+// // Scheduler for sending WhatsApp reminders every 5 minutes
+// // Scheduler for sending WhatsApp reminders every 5 minutes
+// const REMINDER_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+// const REMINDER_MINUTES = 60;
 
-async function sendUnpaidReminders() {
-  try {
-    const cutoff = new Date(Date.now() - REMINDER_MINUTES * 60 * 1000);
-    const unpaidRecords = await Vaiyavachi.find({
-      isPaid: "unpaid",
-      reminderSent: { $ne: true },
-      createdAt: { $lte: cutoff },
-    });
+// async function sendUnpaidReminders() {
+//   try {
+//     const cutoff = new Date(Date.now() - REMINDER_MINUTES * 60 * 1000);
+//     const unpaidRecords = await Vaiyavachi.find({
+//       isPaid: "unpaid",
+//       reminderSent: { $ne: true },
+//       createdAt: { $lte: cutoff },
+//     });
 
-    if (unpaidRecords.length === 0) {
-      console.log("No unpaid Vaiyavachi records found for reminder.");
-      return;
-    }
+//     if (unpaidRecords.length === 0) {
+//       console.log("No unpaid Vaiyavachi records found for reminder.");
+//       return;
+//     }
 
-    let sentCount = 0;
+//     let sentCount = 0;
 
-    for (const record of unpaidRecords) {
-      try {
-        // Send WhatsApp message
-        await sendWhatsAppTemplateForNotPaidFee(record.mobileNumber, [
-          record.name,
-          "Vaiyavach",
-        ]);
+//     for (const record of unpaidRecords) {
+//       try {
+//         // Send WhatsApp message
+//         await sendWhatsAppTemplateForNotPaidFee(record.mobileNumber, [
+//           record.name,
+//           "Vaiyavach",
+//         ]);
 
-        // Update record after message is sent
-        await Vaiyavachi.updateOne(
-          { _id: record._id },
-          {
-            $set: {
-              reminderSent: true,
-              isConfoirmSeat: false, // Updating seat confirmation status
-            },
-          }
-        );
+//         // Update record after message is sent
+//         await Vaiyavachi.updateOne(
+//           { _id: record._id },
+//           {
+//             $set: {
+//               reminderSent: true,
+//               isConfoirmSeat: false, // Updating seat confirmation status
+//             },
+//           }
+//         );
 
-        sentCount++;
-      } catch (err) {
-        console.error(
-          "Failed to send WhatsApp reminder for Vaiyavachi:",
-          record._id,
-          err
-        );
-      }
-    }
+//         sentCount++;
+//       } catch (err) {
+//         console.error(
+//           "Failed to send WhatsApp reminder for Vaiyavachi:",
+//           record._id,
+//           err
+//         );
+//       }
+//     }
 
-    console.log(`WhatsApp reminders sent: ${sentCount}`);
-  } catch (err) {
-    console.error("Error in unpaid reminder scheduler:", err);
-  }
-}
+//     console.log(`WhatsApp reminders sent: ${sentCount}`);
+//   } catch (err) {
+//     console.error("Error in unpaid reminder scheduler:", err);
+//   }
+// }
 
-setInterval(sendUnpaidReminders, REMINDER_INTERVAL_MS);
+// setInterval(sendUnpaidReminders, REMINDER_INTERVAL_MS);
 
 
 // Multer storage config for vaiyavachi image
@@ -382,17 +382,17 @@ exports.verifyPayment = async (req, res) => {
           { vaiyavachNo: payment.vaiyavachiNo },
           { isPaid: "paid" }
         );
-        const vaiyavachi = await Vaiyavachi.findOne({
-          vaiyavachNo: payment.vaiyavachiNo,
-        });
-        if (vaiyavachi) {
-          debugger;
-          sendWhatsAppTemplateForSuccess(vaiyavachi.whatsappNumber, [
-            "Vaiyavach",
-            vaiyavachi.name,
-            payment.vaiyavachiNo,
-          ]);
-        }
+        // const vaiyavachi = await Vaiyavachi.findOne({
+        //   vaiyavachNo: payment.vaiyavachiNo,
+        // });
+        // if (vaiyavachi) {
+        //   debugger;
+        //   sendWhatsAppTemplateForSuccess(vaiyavachi.whatsappNumber, [
+        //     "Vaiyavach",
+        //     vaiyavachi.name,
+        //     payment.vaiyavachiNo,
+        //   ]);
+        // }
       }
       return res.json({ status: "paid" });
     }
