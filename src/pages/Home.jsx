@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // Import Link
-import './Home.css'; // Create a new CSS file for styling
-import Footer from '../components/Footer'; // Import the Footer component
-import Breadcrumb from '../components/Breadcrumb';
-import events from '../data/events'; 
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom"; // Import Link
+import "./Home.css"; // Create a new CSS file for styling
+import Footer from "../components/Footer"; // Import the Footer component
+import Breadcrumb from "../components/Breadcrumb";
+import events from "../data/events";
 
 const images = [
-  '/images/bapji.jpg',
-  '/images/bhadra.jpg',
-  '/images/guru.jpg',
-  '/images/guru2.jpg',
+  "/images/bapji.jpg",
+  "/images/bhadra.jpg",
+  "/images/guru.jpg",
+  "/images/guru2.jpg",
 ];
 
 const Home = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const upcomingEvents = events.filter(event => event.type === 'upcoming'); // Filter upcoming events
+  const upcomingEvents = events.filter((event) => event.type === "upcoming"); // Filter upcoming events
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -32,20 +32,39 @@ const Home = () => {
         </div>
         <div className="text-section">
           <h1>નમો નમઃ શાશ્વત પરિવાર</h1>
-          <h3> યૌવન એટલે શું? વીજળીનો તણખો, <br />
-            જો ઝબકે તો અજવાળુ, નહિંતર ભડકો.. <br /></h3>
-          <div style={{textAlign:"justify"}}>
-          <p>
-          સ્વાર્થી દુનિયાની વચ્ચે રહી નિ:સ્વાર્થતાના મીઠડા ઘુંટ પીવા અને પીવડાવવા માટે દુર્લભ મનુષ્યભવને પ્રત્યેક ક્ષણે ચિરંજીવ બનાવી દેવા માટે પરમાત્મા મહાવીર સ્વામી કથિત શાશ્વત સુખનું લક્ષ અને આત્માના પક્ષને નજર સમક્ષ રાખી ક્ષણે ક્ષણને જીવંત બનાવવા માટે જેઓ સતત પ્રયત્નશીલ છે, જેઓ હંમેશા શાસનને સમર્પિત છે, એવા સત્ત્વશાળી યુવાનોની મજબુત સાંકળ એટલે,</p> <p style={{textAlign:"center"}}> <b> નમો નમઃ શાશ્વત પરિવાર.</b></p>
+          <h3>
+            {" "}
+            યૌવન એટલે શું? વીજળીનો તણખો, <br />
+            જો ઝબકે તો અજવાળુ, નહિંતર ભડકો.. <br />
+          </h3>
+          <div style={{ textAlign: "justify" }}>
+            <p>
+              સ્વાર્થી દુનિયાની વચ્ચે રહી નિ:સ્વાર્થતાના મીઠડા ઘુંટ પીવા અને
+              પીવડાવવા માટે દુર્લભ મનુષ્યભવને પ્રત્યેક ક્ષણે ચિરંજીવ બનાવી દેવા
+              માટે પરમાત્મા મહાવીર સ્વામી કથિત શાશ્વત સુખનું લક્ષ અને આત્માના
+              પક્ષને નજર સમક્ષ રાખી ક્ષણે ક્ષણને જીવંત બનાવવા માટે જેઓ સતત
+              પ્રયત્નશીલ છે, જેઓ હંમેશા શાસનને સમર્પિત છે, એવા સત્ત્વશાળી
+              યુવાનોની મજબુત સાંકળ એટલે,
+            </p>{" "}
+            <p style={{ textAlign: "center" }}>
+              {" "}
+              <b> નમો નમઃ શાશ્વત પરિવાર.</b>
+            </p>
           </div>
         </div>
         <div className="quick-links">
           <h2>Our Activities</h2>
-          <ul style={{ listStyleType: 'disc', padding: 0 }}>
-            <li style={{color:'red'}}>
-              <Link to="/RSSM">Rushabh Samrajya Sanskar Mission ("#Giriraj500misalgiri")</Link>
+          <ul style={{ listStyleType: "disc", padding: 0 }}>
+            <li style={{ color: "red" }}>
+              <Link to="/RSSM">
+                Rushabh Samrajya Sanskar Mission ("#Giriraj500misalgiri")
+              </Link>
             </li>
-            <li>Chauvihar Chhath kari Giriraj Ni 7 Yatra</li>
+            <li style={{ color: "red" }}>
+              <Link to="/events/7-YATRA-2025">
+                Chauvihar Chhath kari Giriraj Ni 7 Yatra
+              </Link>
+            </li>
             <li>Shetrunjay Nadi Nahi Ne Anusthan</li>
             <li>Giriraj Nav-tunk Pratimaji Ashtprakari Puja</li>
             <li>Palkhi Yatra</li>
@@ -64,7 +83,7 @@ const Home = () => {
         <h2>Upcoming Events</h2>
         <div className="events-grid">
           {upcomingEvents.length > 0 ? (
-            upcomingEvents.map(event => (
+            upcomingEvents.map((event) => (
               <div key={event.id} className="event-card">
                 <Link to={`/events/${event.id}`}>
                   <div className="event-card-image">

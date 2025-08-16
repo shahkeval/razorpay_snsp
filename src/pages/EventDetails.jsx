@@ -190,10 +190,7 @@ const EventDetails = () => {
   // useEffect to check payment status from Razorpay query param
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
-    const element = document.getElementById("thankTop");
-        if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+
     const paymentStatus = searchParams.get("razorpay_payment_link_status");
     if (paymentStatus) {
       if (paymentStatus === PaymentStatusType.PAID) {
@@ -212,6 +209,7 @@ const EventDetails = () => {
   useEffect(() => {
     // Check for Razorpay payment params in URL
     const params = getQueryParams(location.search);
+
     if (
       params.razorpay_payment_id &&
       params.razorpay_payment_link_id &&
@@ -219,10 +217,15 @@ const EventDetails = () => {
       params.razorpay_payment_link_status
     ) {
       setPaymentStatus("verifying");
+
       // Call backend to verify payment using payment_link_id
       const paymentLinkId = params.razorpay_payment_link_id;
       let pollCount = 0;
       const poll = setInterval(async () => {
+        const element = document.getElementById("thankTop");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
         try {
           const res = await axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/api/yatriks/verify-payment?orderId=${paymentLinkId}`
@@ -828,7 +831,9 @@ const EventDetails = () => {
                 <DateRangeIcon />
                 <div>
                   <h4>Date & Time</h4>
-                  <p style={{ textAlign: "start" }}>{event.date}</p>
+                  <p style={{ textAlign: "start", color: "#4a4a4a" }}>
+                    {event.date}
+                  </p>
                   {event.time && <p>{event.time}</p>}
                 </div>
               </div>
@@ -838,7 +843,7 @@ const EventDetails = () => {
                   <LocationPinIcon />
                   <div>
                     <h4>Location</h4>
-                    <p>{event.location}</p>
+                    <p style={{ color: "#4a4a4a" }}>{event.location}</p>
                   </div>
                 </div>
               )}
@@ -848,7 +853,7 @@ const EventDetails = () => {
                   <PeopleIcon />
                   <div>
                     <h4>Organizer</h4>
-                    <p>{event.organizer}</p>
+                    <p style={{ color: "#4a4a4a" }}>{event.organizer}</p>
                   </div>
                 </div>
               )}

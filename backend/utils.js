@@ -53,7 +53,7 @@ export async function sendWhatsAppTemplateForNotPaidFee(phoneNumber, templatepar
     destination: "91" + phoneNumber,
     "src.name": "SNSP09",
     template: JSON.stringify({
-      id: "152e8800-4b8e-4d72-a645-34d237066b1c",
+      id: "5b648b0f-5d55-4a17-ad0c-65f7a397c409",
       params: templateparams,
     }),
     // message: JSON.stringify({
