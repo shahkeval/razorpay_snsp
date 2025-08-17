@@ -943,12 +943,23 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                     value: "સ્પોટ નંબર 10 : રામપોળ (નવટુક જવાના રસ્તે)",
                     label: "સ્પોટ નંબર 10 : રામપોળ (નવટુક જવાના રસ્તે)",
                   },
+                  {
+                    value: "any_place_by_parivar",
+                    label: "Any place by Parivar",
+                  },
                 ].map((opt, idx, arr) => {
+                  if (opt.value === "any_place_by_parivar") {
+                    return (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    );
+                  }
                   const count =
                     (typeValueCounts.spot && typeValueCounts.spot[opt.value]) ||
                     0;
                   const remaining = 8 - count;
-                  const isFirstOrLast = idx === 0 || idx === arr.length - 1;
+                  const isFirstOrLast = idx === 0 || idx === arr.length - 2; // last-1 is last spot, last is parivar
                   return (
                     <option
                       key={opt.value}
@@ -994,13 +1005,24 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                     value: "સ્પોટ નંબર 10 : રામપોળ (નવટુક જવાના રસ્તે)",
                     label: "સ્પોટ નંબર 10 : રામપોળ (નવટુક જવાના રસ્તે)",
                   },
+                  {
+                    value: "any_place_by_parivar",
+                    label: "Any place by Parivar",
+                  },
                 ].map((opt, idx, arr) => {
+                  if (opt.value === "any_place_by_parivar") {
+                    return (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    );
+                  }
                   const count =
                     (typeValueCounts.roamming &&
                       typeValueCounts.roamming[opt.value]) ||
                     0;
                   const remaining = 15 - count;
-                  const isFirstOrLast = idx === 0 || idx === arr.length - 1;
+                  const isFirstOrLast = idx === 0 || idx === arr.length - 2; // last-1 is last spot, last is parivar
                   return (
                     <option
                       key={opt.value}
@@ -1047,7 +1069,18 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
                     value: "ચૈત્ય વંદન  ધેટી ના પગલે",
                     label: "ચૈત્ય વંદન  ધેટી ના પગલે",
                   },
-                ].map((opt) => {
+                  {
+                    value: "any_place_by_parivar",
+                    label: "Any place by Parivar",
+                  },
+                ].map((opt, idx, arr) => {
+                  if (opt.value === "any_place_by_parivar") {
+                    return (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    );
+                  }
                   const count =
                     (typeValueCounts.chaityavandan &&
                       typeValueCounts.chaityavandan[opt.value]) ||

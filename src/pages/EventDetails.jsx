@@ -17,15 +17,15 @@ const EventDetails = () => {
   const { id } = useParams();
   const event = events.find((e) => e.id === id);
 
-  // Separate state for donation form
-  const [donationFormData, setDonationFormData] = useState({
-    name: "",
-    email: "",
-    category: event.title,
-    phone: "",
-    message: "",
-    amount: "",
-  });
+  // // Separate state for donation form
+  // const [donationFormData, setDonationFormData] = useState({
+  //   name: "",
+  //   email: "",
+  //   category: event.title,
+  //   phone: "",
+  //   message: "",
+  //   amount: "",
+  // });
 
   // Separate state for custom registration form
   const [customRegistrationData, setCustomRegistrationData] = useState({
@@ -206,6 +206,9 @@ const EventDetails = () => {
     }
   }, []);
 
+  // State to hold registration number from backend
+  const [registrationNumber, setRegistrationNumber] = useState(null);
+
   useEffect(() => {
     // Check for Razorpay payment params in URL
     const params = getQueryParams(location.search);
@@ -233,6 +236,9 @@ const EventDetails = () => {
           if (res.data.status === "paid") {
             setPaymentStatus("paid");
             setPaymentThankYou(true);
+            if (res.data.No) {
+              setRegistrationNumber(res.data.No);
+            }
             clearInterval(poll);
           } else if (pollCount > 15) {
             // Timeout after ~1min
@@ -279,6 +285,9 @@ const EventDetails = () => {
           if (res.data.status === "paid") {
             setPaymentStatus("paid");
             setVaiyavachPaymentThankYou(true);
+            if (res.data.No) {
+              setRegistrationNumber(res.data.No);
+            }
             clearInterval(poll);
           } else if (pollCount > 15) {
             // Timeout after ~1min
@@ -390,13 +399,13 @@ const EventDetails = () => {
     );
   }
 
-  const handleDonationChange = (e) => {
-    const { name, value } = e.target;
-    setDonationFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  // const handleDonationChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setDonationFormData((prev) => ({
+  //     ...prev,
+  //     [name]: value,
+  //   }));
+  // };
 
   const handleCustomRegistrationChange = (e) => {
     const { name, value } = e.target;
@@ -414,29 +423,29 @@ const EventDetails = () => {
     }));
   };
 
-  const handleDonationSubmit = (e) => {
-    e.preventDefault();
-    setIsSubmittingDonation(true);
-    emailjs.sendForm(
-      "service_264rxjp",
-      "template_7oremm9",
-      e.target, // Sends form data to the template
-      "7vYFlUx2o5N3Cv3Ll"
-    );
+  // const handleDonationSubmit = (e) => {
+  //   e.preventDefault();
+  //   setIsSubmittingDonation(true);
+  //   emailjs.sendForm(
+  //     "service_264rxjp",
+  //     "template_7oremm9",
+  //     e.target, // Sends form data to the template
+  //     "7vYFlUx2o5N3Cv3Ll"
+  //   );
 
-    const qrString = `upi://pay?pa=namonamahshashwatcha.62486048@hdfcbank&pn=${donationFormData.fullName}&am=${donationFormData.amount}&cu=INR&tn=${donationFormData.message}`;
-    setQrData(qrString);
-    setTimer(300); // Reset timer on new submission
-    setIsSubmittingDonation(false);
-    setDonationFormData({
-      name: "",
-      email: "",
-      category: event.title,
-      phone: "",
-      message: "",
-      amount: "",
-    });
-  };
+  //   const qrString = `upi://pay?pa=namonamahshashwatcha.62486048@hdfcbank&pn=${donationFormData.fullName}&am=${donationFormData.amount}&cu=INR&tn=${donationFormData.message}`;
+  //   setQrData(qrString);
+  //   setTimer(300); // Reset timer on new submission
+  //   setIsSubmittingDonation(false);
+  //   setDonationFormData({
+  //     name: "",
+  //     email: "",
+  //     category: event.title,
+  //     phone: "",
+  //     message: "",
+  //     amount: "",
+  //   });
+  // };
 
   const handleCustomRegistrationSubmit = async (e) => {
     e.preventDefault();
@@ -1038,13 +1047,44 @@ const EventDetails = () => {
                       style={{
                         fontSize: "1.1rem",
                         color: "#333",
-                        marginBottom: "1.5rem",
+                        marginBottom: registrationNumber ? "0.5rem" : "1.5rem",
                       }}
                     >
                       We have received your payment and details.
                       <br />
                       We will contact you with more information soon.
                     </div>
+                    {registrationNumber && (
+                      <div
+                        style={{
+                          background: "#fffde7",
+                          border: "1px solid #ffd600",
+                          borderRadius: "8px",
+                          padding: "1rem 1.5rem",
+                          marginBottom: "1.2rem",
+                          color: "#795548",
+                          fontWeight: 600,
+                          fontSize: "1.15rem",
+                          boxShadow: "0 1px 4px rgba(255,214,0,0.08)",
+                          display: "inline-block",
+                        }}
+                      >
+                        This is your Registration number:
+                        <br />
+                        <span
+                          style={{
+                            fontSize: "1.5rem",
+                            color: "#ff6f00",
+                            fontWeight: 700,
+                            letterSpacing: "1px",
+                            display: "block",
+                            marginTop: "0.3rem",
+                          }}
+                        >
+                          {registrationNumber}
+                        </span>
+                      </div>
+                    )}
                     <button
                       onClick={handleAddAnotherResponse}
                       style={{

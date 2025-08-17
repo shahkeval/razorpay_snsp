@@ -5,7 +5,10 @@ const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Payment = require("../models/Payment");
 const fs = require("fs");
-const { sendWhatsAppTemplateForSuccess ,sendWhatsAppTemplateForNotPaidFee} = require("../utils");
+const {
+  sendWhatsAppTemplateForSuccess,
+  sendWhatsAppTemplateForNotPaidFee,
+} = require("../utils");
 // // Scheduler for sending WhatsApp reminders every 5 minutes
 // // Scheduler for sending WhatsApp reminders every 5 minutes
 // const REMINDER_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
@@ -63,7 +66,6 @@ const { sendWhatsAppTemplateForSuccess ,sendWhatsAppTemplateForNotPaidFee} = req
 // }
 
 // setInterval(sendUnpaidReminders, REMINDER_INTERVAL_MS);
-
 
 // Multer storage config for vaiyavachi image
 const storage = multer.diskStorage({
@@ -340,7 +342,7 @@ exports.verifyPayment = async (req, res) => {
           { isPaid: "paid" }
         );
       }
-      return res.json({ status: "paid" });
+      return res.json({ status: "paid", No: payment.vaiyavachiNo });
     }
     // If not paid, check Razorpay directly
     let razorpayRes;
@@ -394,7 +396,7 @@ exports.verifyPayment = async (req, res) => {
         //   ]);
         // }
       }
-      return res.json({ status: "paid" });
+      return res.json({ status: "paid", No: payment.vaiyavachiNo });
     }
     // Not paid yet, return current status
     return res.json({ status: razorpayRes.status });
@@ -555,7 +557,6 @@ exports.getTypeValueCounts = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 // New summary endpoint for howToReachPalitana and typeOfVaiyavach
 exports.getVaiyavachiTypeSummary = async (req, res) => {

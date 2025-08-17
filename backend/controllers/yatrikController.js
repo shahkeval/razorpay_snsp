@@ -326,19 +326,16 @@ exports.verifyPayment = async (req, res) => {
     if (!payment) return res.status(404).json({ status: "not_found" });
     if (payment.status === "paid") {
       // Only update isPaid field in Yatrik collection
-      // console.log("4");
       if (payment.yatrikNo) {
-        // console.log("5");
         await Yatrik.updateOne(
           { yatrikNo: payment.yatrikNo },
           { isPaid: "paid" }
         );
       }
-      // console.log("6");
-      return res.json({ status: "paid" });
+      return res.json({ status: "paid", No: payment.yatrikNo });
     }
     // If not paid, check Razorpay directly
-    // console.log("7");
+    // console.log("7");  
     let razorpayRes;
     try {
       // console.log("8");
@@ -357,7 +354,6 @@ exports.verifyPayment = async (req, res) => {
     // console.log("11");
     if (razorpayRes.status === "paid") {
       // Update existing Payment record with all details
-      // console.log("12");
       payment.status = "paid";
       payment.amount = "5000";
       payment.method = razorpayRes.payment
@@ -379,28 +375,13 @@ exports.verifyPayment = async (req, res) => {
       await payment.save();
       // Only update isPaid field in Yatrik collection
       if (payment.yatrikNo) {
-        // console.log("13");
         await Yatrik.updateOne(
           { yatrikNo: payment.yatrikNo },
           { isPaid: "paid" }
         );
-
-        //whatsapp
-        debugger;
-        // const yatrik = await Yatrik.findOne({
-        //   yatrikNo: payment.yatrikNo,
-        // });
-        // if (yatrik) {
-        //   sendWhatsAppTemplateForSuccess(yatrik.whatsappNumber, [
-        //     "Yatrik",
-        //     yatrik.name,
-        //     payment.yatrikNo,
-        //   ]);
-        // }
-
-        // console.log("14");
       }
-      return res.json({ status: "paid" });
+      // Always return registration number (No) in response
+      return res.json({ status: "paid", No: payment.yatrikNo });
     }
     // console.log("15");
     // Not paid yet, return current status
