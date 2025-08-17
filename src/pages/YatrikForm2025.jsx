@@ -28,7 +28,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
     yatrikConfirmation: "yes",
     familyConfirmation: "yes",
   });
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(2);
   const [yatrikPhotoPreview, setYatrikPhotoPreview] = useState(null);
   const [captchaValue, setCaptchaValue] = useState(() =>
     Math.random().toString(36).substring(2, 8).toUpperCase()
@@ -113,6 +113,14 @@ const YatrikForm2025 = ({ event, onComplete }) => {
       if (!/^\d*\.?\d*$/.test(value)) error = "Only positive numbers allowed";
       else if (value === "" || parseInt(value) <= 0)
         error = "Must be a positive number";
+    }
+    if (name === "dateOfBirth") {
+      if (value) {
+        const age = Math.floor(
+          (Date.now() - new Date(value)) / (365.25 * 24 * 60 * 60 * 1000)
+        );
+        if (age < 10) error = "Age must be at least 10 years";
+      }
     }
     if (name === "address") {
       if (value.length > 255) error = "Address cannot exceed 255 characters";
@@ -571,12 +579,19 @@ const YatrikForm2025 = ({ event, onComplete }) => {
               id="dateOfBirth"
               name="dateOfBirth"
               value={yatraRegistrationData.dateOfBirth}
-              onChange={(e) =>
+              onChange={(e) => {
                 setYatraRegistrationData({
                   ...yatraRegistrationData,
                   dateOfBirth: e.target.value,
-                })
-              }
+                });
+                setYatrikErrors((prev) => ({
+                  ...prev,
+                  dateOfBirth: validateField("dateOfBirth", e.target.value, {
+                    ...yatraRegistrationData,
+                    dateOfBirth: e.target.value,
+                  }),
+                }));
+              }}
               required
             />
             {yatrikErrors.dateOfBirth && (

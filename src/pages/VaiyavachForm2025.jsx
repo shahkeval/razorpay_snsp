@@ -33,7 +33,7 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
     familyConfirmation: "yes",
     progress: 0,
   });
-  const [vaiyavachCurrentStep, setVaiyavachCurrentStep] = useState(1);
+  const [vaiyavachCurrentStep, setVaiyavachCurrentStep] = useState(2);
   const [vaiyavachPhotoPreview, setVaiyavachPhotoPreview] = useState(null);
   const [vaiyavachTransactionNumber, setVaiyavachTransactionNumber] =
     useState("");
@@ -103,7 +103,7 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
         const age = Math.floor(
           (Date.now() - new Date(value)) / (365.25 * 24 * 60 * 60 * 1000)
         );
-        if (age < 12) error = "Age must be at least 12 years";
+        if (age < 10 || age > 60) error = "Age must be between 10 and 60 years";
       }
     }
     if (name === "address") {
@@ -1277,7 +1277,8 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
       )}
       {/* Thank You Message */}
       {vaiyavachCurrentStep === 5 && vaiyavachPaymentThankYou && (
-        <div id="ThankForm"
+        <div
+          id="ThankForm"
           style={{
             display: "flex",
             flexDirection: "column",
