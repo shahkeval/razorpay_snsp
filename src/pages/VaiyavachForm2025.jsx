@@ -33,7 +33,7 @@ const VaiyavachForm2025 = ({ event, onComplete }) => {
     familyConfirmation: "yes",
     progress: 0,
   });
-  const [vaiyavachCurrentStep, setVaiyavachCurrentStep] = useState(2);
+  const [vaiyavachCurrentStep, setVaiyavachCurrentStep] = useState(1);
   const [vaiyavachPhotoPreview, setVaiyavachPhotoPreview] = useState(null);
   const [vaiyavachTransactionNumber, setVaiyavachTransactionNumber] =
     useState("");
