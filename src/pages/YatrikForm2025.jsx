@@ -28,7 +28,7 @@ const YatrikForm2025 = ({ event, onComplete }) => {
     yatrikConfirmation: "yes",
     familyConfirmation: "yes",
   });
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep, setCurrentStep] = useState(1);
   const [yatrikPhotoPreview, setYatrikPhotoPreview] = useState(null);
   const [captchaValue, setCaptchaValue] = useState(() =>
     Math.random().toString(36).substring(2, 8).toUpperCase()
