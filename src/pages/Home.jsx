@@ -61,7 +61,7 @@ const Home = () => {
               </Link>
             </li>
             <li style={{ color: "red" }}>
-              <Link to="/events/7-YATRA-2025">
+              <Link to="/events/7-YATRA-2026">
                 Chauvihar Chhath kari Giriraj Ni 7 Yatra
               </Link>
             </li>
