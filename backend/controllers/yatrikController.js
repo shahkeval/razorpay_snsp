@@ -509,13 +509,20 @@ exports.deleteYatrik = async (req, res) => {
 // Get summary of Yatrik records (total, old category, new category)
 exports.getYatrikSummary = async (req, res) => {
   try {
-    const totalRecords = await Yatrik.countDocuments();
+    const totalRecords = await Yatrik.countDocuments({
+      isPaid: "paid",
+    });
+
     const oldCategoryCount = await Yatrik.countDocuments({
       is7YatraDoneEarlier: "yes",
+      isPaid: "paid",
     });
+
     const newCategoryCount = await Yatrik.countDocuments({
       is7YatraDoneEarlier: "no",
+      isPaid: "paid",
     });
+
     res.status(200).json({
       totalRecords,
       oldCategoryCount,
@@ -526,15 +533,20 @@ exports.getYatrikSummary = async (req, res) => {
   }
 };
 
+
 // New summary endpoint for howToReachPalitana (with_us, direct_palitana)
 exports.getYatrikHowToReachSummary = async (req, res) => {
   try {
     const withUsCount = await Yatrik.countDocuments({
       howToReachPalitana: "with_us",
+      isPaid: "paid",
     });
+
     const directPalitanaCount = await Yatrik.countDocuments({
       howToReachPalitana: "direct_palitana",
+      isPaid: "paid",
     });
+
     res.status(200).json({
       with_us: withUsCount,
       direct_palitana: directPalitanaCount,
@@ -543,6 +555,7 @@ exports.getYatrikHowToReachSummary = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // Get all Payment records with pagination, search, sorting, and filtering
 exports.getAllPayments = async (req, res) => {

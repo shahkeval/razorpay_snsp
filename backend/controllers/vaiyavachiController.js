@@ -508,13 +508,20 @@ exports.deleteVaiyavachi = async (req, res) => {
 // Get summary of Vaiyavachi records (total, done earlier, not done earlier)
 exports.getVaiyavachiSummary = async (req, res) => {
   try {
-    const totalRecords = await Vaiyavachi.countDocuments();
+    const totalRecords = await Vaiyavachi.countDocuments({
+      isPaid: "paid",
+    });
+
     const twoDaysCount = await Vaiyavachi.countDocuments({
       howManyDaysJoin: "2",
+      isPaid: "paid",
     });
+
     const fourDaysCount = await Vaiyavachi.countDocuments({
       howManyDaysJoin: "4",
+      isPaid: "paid",
     });
+
     res.status(200).json({
       totalRecords,
       twoDaysCount,
@@ -524,6 +531,7 @@ exports.getVaiyavachiSummary = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // Endpoint: GET /api/vaiyavach/type-value-counts
 exports.getTypeValueCounts = async (req, res) => {
@@ -564,20 +572,30 @@ exports.getVaiyavachiTypeSummary = async (req, res) => {
     // How to reach Palitana
     const withUsCount = await Vaiyavachi.countDocuments({
       howToReachPalitana: "with_us",
+      isPaid: "paid",
     });
+
     const directPalitanaCount = await Vaiyavachi.countDocuments({
       howToReachPalitana: "direct_palitana",
+      isPaid: "paid",
     });
+
     // Type of Vaiyavach
     const spotCount = await Vaiyavachi.countDocuments({
       typeOfVaiyavach: "spot",
+      isPaid: "paid",
     });
+
     const roammingCount = await Vaiyavachi.countDocuments({
       typeOfVaiyavach: "roamming",
+      isPaid: "paid",
     });
+
     const chaityavandanCount = await Vaiyavachi.countDocuments({
       typeOfVaiyavach: "chaityavandan",
+      isPaid: "paid",
     });
+
     res.status(200).json({
       howToReachPalitana: {
         with_us: withUsCount,
@@ -593,5 +611,6 @@ exports.getVaiyavachiTypeSummary = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // Get summary of paid and unpaid Vaiyavach records
