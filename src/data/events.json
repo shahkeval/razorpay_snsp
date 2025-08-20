@@ -9,7 +9,13 @@
     "date": "28th June, 2025 (અષાઢ સુદ ત્રીજ) શનિવાર",
     "location": "Ahmedabad",
     "organizer": "Namo Namah Shaswat Parivar",
-    "type": "past"
+    "type": "past",
+    "images":[
+      "/images/RSSM/6-12Group.jpg",
+      "/images/RSSM/12-18Group.jpg",
+      "/images/RSSM/30-45Group.jpg",
+      "/images/RSSM/45+Group.jpg"
+    ]
   },
   {
     "id": "7-YATRA-2026",

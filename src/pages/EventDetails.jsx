@@ -14,6 +14,32 @@ import VaiyavachForm2025 from "./VaiyavachForm2025";
 import PaintingCompitationRSSM from "./painting_compitation_RSSM";
 
 const EventDetails = () => {
+
+  // Expanded image modal state and handlers for event gallery
+  const [showEventImageModal, setShowEventImageModal] = useState(false);
+  const [eventImageIndex, setEventImageIndex] = useState(0);
+
+  const openEventImageModal = (img, idx) => {
+    setEventImageIndex(idx);
+    setShowEventImageModal(true);
+  };
+
+  const closeEventImageModal = () => {
+    setShowEventImageModal(false);
+  };
+
+
+  // Keyboard navigation for modal
+  // useEffect(() => {
+  //   if (!showEventImageModal) return;
+  //   const handleKeyDown = (e) => {
+  //     if (e.key === "Escape") closeEventImageModal();
+  //     else if (e.key === "ArrowRight") nextEventImage();
+  //     else if (e.key === "ArrowLeft") prevEventImage();
+  //   };
+  //   window.addEventListener("keydown", handleKeyDown);
+  //   return () => window.removeEventListener("keydown", handleKeyDown);
+  // }, [showEventImageModal, eventImageIndex, events]);
   const { id } = useParams();
   const event = events.find((e) => e.id === id);
 
@@ -960,21 +986,51 @@ const EventDetails = () => {
           )} */}
 
             {event.images && event.images.length > 0 && (
-              <div className="event-gallery">
-                <h3>Event Gallery</h3>
-                <div className="gallery-grid">
-                  {event.images.map((img, index) => (
-                    <div key={index} className="gallery-item">
-                      <img
-                        src={img}
-                        alt={`${event.title} - image ${index + 1}`}
-                        className="fit-image"
-                      />
-                    </div>
-                  ))}
+              <>
+                <div className="event-gallery">
+                  <h3>Event Gallery</h3>
+                  <div className="gallery-grid">
+                    {event.images.map((img, index) => (
+                      <div
+                        key={index}
+                        className="gallery-item"
+                        onClick={() => openEventImageModal(img, index)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <img
+                          src={img}
+                          alt={`${event.title} - image ${index + 1}`}
+                          className="fit-image"
+                        />
+                        <div className="overlay">
+                          <span>View</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+                {/* Modal for expanded image view */}
+                {showEventImageModal && (
+                  <div className="modal-overlay" onClick={closeEventImageModal}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                      <div className="modal-header">
+                        <h3>{`${event.title} - image ${eventImageIndex + 1}`}</h3>
+                        <button className="close-btn" onClick={closeEventImageModal}>×</button>
+                      </div>
+                      <div className="modal-body">
+                        <img
+                          src={event.images[eventImageIndex]}
+                          alt={`${event.title} - image ${eventImageIndex + 1}`}
+                          className="modal-image"
+                        />
+                        {/* No navigation or counter, just image and close button */}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
+
           </div>
 
           <div className="registration-container" id="thankTop">
