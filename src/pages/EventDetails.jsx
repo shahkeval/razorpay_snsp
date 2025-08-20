@@ -14,7 +14,6 @@ import VaiyavachForm2025 from "./VaiyavachForm2025";
 import PaintingCompitationRSSM from "./painting_compitation_RSSM";
 
 const EventDetails = () => {
-
   // Expanded image modal state and handlers for event gallery
   const [showEventImageModal, setShowEventImageModal] = useState(false);
   const [eventImageIndex, setEventImageIndex] = useState(0);
@@ -27,7 +26,6 @@ const EventDetails = () => {
   const closeEventImageModal = () => {
     setShowEventImageModal(false);
   };
-
 
   // Keyboard navigation for modal
   // useEffect(() => {
@@ -988,7 +986,7 @@ const EventDetails = () => {
             {event.images && event.images.length > 0 && (
               <>
                 <div className="event-gallery">
-                  <h3>Event Gallery</h3>
+                  <h3>Event Winners</h3>
                   <div className="gallery-grid">
                     {event.images.map((img, index) => (
                       <div
@@ -1012,10 +1010,20 @@ const EventDetails = () => {
                 {/* Modal for expanded image view */}
                 {showEventImageModal && (
                   <div className="modal-overlay" onClick={closeEventImageModal}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                    <div
+                      className="modal-content"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="modal-header">
-                        <h3>{`${event.title} - image ${eventImageIndex + 1}`}</h3>
-                        <button className="close-btn" onClick={closeEventImageModal}>×</button>
+                        <h3>{`${event.title} - image ${
+                          eventImageIndex + 1
+                        }`}</h3>
+                        <button
+                          className="close-btn"
+                          onClick={closeEventImageModal}
+                        >
+                          ×
+                        </button>
                       </div>
                       <div className="modal-body">
                         <img
@@ -1030,7 +1038,6 @@ const EventDetails = () => {
                 )}
               </>
             )}
-
           </div>
 
           <div className="registration-container" id="thankTop">
