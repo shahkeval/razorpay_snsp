@@ -77,7 +77,7 @@ const PaintingRegistrationManagementPage = () => {
       { accessorKey: 'state', header: 'State', enableColumnFilter: true },
       { accessorKey: 'city', header: 'City', enableColumnFilter: true },
       { accessorKey: 'ageGroup', header: 'Age Group', enableColumnFilter: true },
-      { accessorKey: 'paintingType', header: 'Type of Painting', enableColumnFilter: true },
+      // { accessorKey: 'paintingType', header: 'Type of Painting', enableColumnFilter: true },
       { accessorKey: 'createdAt', header: 'Date', enableColumnFilter: true, Cell: ({ cell }) => cell.getValue() ? new Date(cell.getValue()).toLocaleString() : '' },
     ],
     []

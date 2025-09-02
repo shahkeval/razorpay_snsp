@@ -364,7 +364,7 @@ const PaintingCompitationRSSM = () => {
             </select>
           </div>
           {/* Type of Painting (Radio) */}
-          <div style={{ marginBottom: 18, display: 'flex', flexDirection: 'column' }}>
+          {/* <div style={{ marginBottom: 18, display: 'flex', flexDirection: 'column' }}>
             <label style={{ marginBottom: 6, fontWeight: 600, color: '#333' }}>Type of Painting*</label>
             <div style={{ display: 'flex', gap: '2rem', margin: '0.5rem 0 0.5rem 0' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
@@ -390,7 +390,7 @@ const PaintingCompitationRSSM = () => {
                 /> Canvas
               </label>
             </div>
-          </div>
+          </div> */}
           {submitError && (
             <div
               style={{

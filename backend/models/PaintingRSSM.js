@@ -9,7 +9,7 @@ const PaintingRSSMSchema = new mongoose.Schema({
   state: { type: String, required: true },
   city: { type: String, required: true },
   ageGroup: { type: String, required: true },
-  paintingType: { type: String, required: true },
+  paintingType: { type: String },
   paintingNo: { type: String, unique: true },
 }, { timestamps: true });
 
