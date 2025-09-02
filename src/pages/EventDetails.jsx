@@ -1600,7 +1600,7 @@ const EventDetails = () => {
                                 />
                               )}
                             </div>
-                          ) : event.id === "painting-competition" ? (
+                          ) : event.id === "drawing-competition" ? (
                             <PaintingCompitationRSSM />
                           ) : (
                             <form onSubmit={handleDefaultRegistrationSubmit}>

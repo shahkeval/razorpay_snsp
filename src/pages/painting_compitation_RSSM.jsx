@@ -95,7 +95,10 @@ const PaintingCompitationRSSM = () => {
           letterSpacing: '0.5px',
         }}
       >
-        Painting Competition Registration (RSSM)
+        Drawing Competition Registration (RSSM)
+        <div className="rules-note">
+                              <p>For rules and regulations:- <br></br><button className="rules-button" onClick={() => window.open('https://docs.google.com/document/d/1jsbGZzNLNiaYC8NsJyT1pMMGog3D5EguAkW78iMcNck/edit?tab=t.0', '_blank')}>click here</button></p>
+                            </div>
       </h2>
       {submitSuccess ? (
         <div
@@ -354,10 +357,10 @@ const PaintingCompitationRSSM = () => {
               }}
             >
               <option value="">Select Age Group</option>
-              <option value="upto 10">Upto 10</option>
-              <option value="11-16">11 - 16</option>
-              <option value="17-25">17 - 25</option>
-              <option value="25+">25 +</option>
+              <option value="5-12">5-12</option>
+              <option value="13-20">13-20</option>
+              <option value="21 - 35">21-35</option>
+              <option value="35+">35+</option>
             </select>
           </div>
           {/* Type of Painting (Radio) */}
