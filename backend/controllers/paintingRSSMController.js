@@ -129,7 +129,7 @@ exports.getAllRegistrationsNoPagination = async (req, res) => {
 };
 
 // Get registration summary (total count and totals by paintingType)
-exports.getregsummarybyagegroup = async (req, res) => {
+exports.getregsummarybypaintingtype = async (req, res) => {
   try {
     // Get total count of registrations
     const totalCount = await PaintingRSSM.countDocuments();
@@ -137,7 +137,7 @@ exports.getregsummarybyagegroup = async (req, res) => {
     // Get count of registrations by paintingType
     const byPaintingType = await PaintingRSSM.aggregate([
       { $group: { _id: "$ageGroup", count: { $sum: 1 } } },
-      { $project: { _id: 0, ageGroup: "$_id", count: 1 } }
+      { $project: { _id: 0, paintingType: "$_id", count: 1 } }
     ]);
 
     res.json({ totalCount, byPaintingType });
