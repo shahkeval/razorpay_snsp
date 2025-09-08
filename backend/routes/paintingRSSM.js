@@ -15,7 +15,7 @@ router.get('/nopagination', paintingRSSMController.getAllRegistrationsNoPaginati
 router.get('/summarybyagegroup', paintingRSSMController.getregsummarybyagegroup);
 
 // Get registration summary by paintingType
-router.get('/summarybypaintingtype', paintingRSSMController.getregsummarybypaintingtype);
+router.get('/summarybypaintingtype', paintingRSSMController.getregsummarybyagegroup);
 
 // Get registration by ID
 router.get('/get_paint/:id', paintingRSSMController.getRegistrationById);

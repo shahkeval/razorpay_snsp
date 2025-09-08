@@ -143,8 +143,8 @@ const PaintingRegistrationManagementPage = () => {
             <span className="value">{summary.totalCount}</span>
           </div>
           {summary.byPaintingType.map((item, idx) => (
-            <div className="vaiyavach-summary-card" key={item.paintingType}>
-              <span className="label">{item.paintingType}</span>
+            <div className="vaiyavach-summary-card" key={item.ageGroup}>
+              <span className="label">{item.ageGroup}</span>
               <span className="value">{item.count}</span>
             </div>
           ))}
