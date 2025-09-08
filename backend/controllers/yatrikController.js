@@ -404,7 +404,8 @@ exports.getAllYatriks = async (req, res) => {
       ...filters
     } = req.query;
 
-    let filter = {};
+    let filter = { isPaid: "paid" }; 
+
     // Build filter for each field
     Object.keys(filters).forEach((key) => {
       if (
@@ -413,11 +414,9 @@ exports.getAllYatriks = async (req, res) => {
       ) {
         // Special handling for boolean fields
         if (
-          [
-            "is7YatraDoneEarlier",
-            "yatrikConfirmation",
-            "familyConfirmation",
-          ].includes(key)
+          ["is7YatraDoneEarlier", "yatrikConfirmation", "familyConfirmation"].includes(
+            key
+          )
         ) {
           const val = String(filters[key]).toLowerCase();
           if (val === "true" || val === "false") {
@@ -680,6 +679,90 @@ exports.getYatrikPaymentStatusSummary = async (req, res) => {
       summary[item._id] = item.count;
     });
     res.status(200).json({ yatrik: summary });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Fetch Yatriks for Excel export (only paid records, excluding yatrikPhoto and isActive fields)
+exports.fetchYatriksForExcel = async (req, res) => {
+  try {
+    let yatriks = await Yatrik.find(
+      { isPaid: "paid" },
+      {
+        yatrikPhoto: 0,
+        isActive: 0,
+        _id: 0,
+        reminderSent: 0,
+        isConfoirmSeat: 0,
+        updatedAt: 0,
+        __v: 0,
+      }
+    ).sort({ yatrikNo: 1 });
+
+    // Format dob into dd/mm/yyyy
+    yatriks = yatriks.map((y) => {
+      const obj = y.toObject(); // convert mongoose doc to plain object
+      if (obj.dob) {
+        const date = new Date(obj.dob);
+        const dd = String(date.getDate()).padStart(2, "0");
+        const mm = String(date.getMonth() + 1).padStart(2, "0"); // months start from 0
+        const yyyy = date.getFullYear();
+        obj.dob = `${dd}/${mm}/${yyyy}`;
+      }
+      return obj;
+    });
+
+    res.status(200).json({ yatriks });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Fetch all Payments for Excel export (attach mobileNumber, no pagination)
+exports.fetchPaymentsForExcel = async (req, res) => {
+  try {
+    const payments = await Payment.find({}, { __v: 0 ,_id:0,paymentLinkId:0,linkExpiredAt:0,paymentStartedAt:0,paymentCancelledAt:0,paymentErrorAt:0,errorReason:0,cancelledReason:0,userAgent:0,ip:0,meta:0}).sort({ createdAt: -1 });
+
+    // Attach mobileNumber from Yatrik/Vaiyavachi collections
+    const yatrikNos = payments.filter((p) => p.yatrikNo).map((p) => p.yatrikNo);
+    const vaiyavachNos = payments
+      .filter((p) => p.vaiyavachiNo)
+      .map((p) => p.vaiyavachiNo);
+
+    const yatrikMap = {};
+    const vaiyavachMap = {};
+
+    if (yatrikNos.length > 0) {
+      const yatriks = await Yatrik.find(
+        { yatrikNo: { $in: yatrikNos } },
+        "yatrikNo mobileNumber"
+      );
+      yatriks.forEach((y) => {
+        yatrikMap[y.yatrikNo] = y.mobileNumber;
+      });
+    }
+
+    if (vaiyavachNos.length > 0) {
+      const vaiyavachis = await Vaiyavachi.find(
+        { vaiyavachNo: { $in: vaiyavachNos } },
+        "vaiyavachNo mobileNumber"
+      );
+      vaiyavachis.forEach((v) => {
+        vaiyavachMap[v.vaiyavachNo] = v.mobileNumber;
+      });
+    }
+
+    const paymentsWithMobile = payments.map((p) => {
+      const obj = p.toObject();
+      let mobileNumber = "";
+      if (obj.yatrikNo && yatrikMap[obj.yatrikNo]) mobileNumber = yatrikMap[obj.yatrikNo];
+      else if (obj.vaiyavachiNo && vaiyavachMap[obj.vaiyavachiNo])
+        mobileNumber = vaiyavachMap[obj.vaiyavachiNo];
+      return { ...obj, mobileNumber };
+    });
+
+    res.status(200).json({ payments: paymentsWithMobile });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

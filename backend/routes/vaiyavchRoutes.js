@@ -31,6 +31,8 @@ router.get('/type-value-counts', vaiyavachiController.getTypeValueCounts);
 // Get Vaiyavachi type summary (howToReachPalitana and typeOfVaiyavach)
 router.get('/type-summary', vaiyavachiController.getVaiyavachiTypeSummary);
 
+router.get('/fetch-for-excel', vaiyavachiController.fetchvaiyavachisForExcel);
+
 
 module.exports = router;
 

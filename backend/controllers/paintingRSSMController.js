@@ -146,3 +146,16 @@ exports.getregsummarybypaintingtype = async (req, res) => {
     res.status(500).json({ message: 'Server error.' });
   }
 }; 
+
+
+// Fetch Yatriks for Excel export (only paid records, excluding yatrikPhoto and isActive fields)
+exports.fetchpaintsForExcel = async (req, res) => {
+  try {
+    let records = await PaintingRSSM.find({},{
+      _id:0,__v:0
+    }).sort({ paintingNo: 1 });
+    res.status(200).json({ records });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

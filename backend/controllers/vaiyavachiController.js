@@ -417,7 +417,8 @@ exports.getAllVaiyavachis = async (req, res) => {
       ...filters
     } = req.query;
 
-    let filter = {};
+    let filter = { isPaid: "paid" }; // ✅ always only fetch paid records
+
     // Build filter for each field
     Object.keys(filters).forEach((key) => {
       if (
@@ -612,5 +613,37 @@ exports.getVaiyavachiTypeSummary = async (req, res) => {
   }
 };
 
+// Fetch Yatriks for Excel export (only paid records, excluding yatrikPhoto and isActive fields)
+exports.fetchvaiyavachisForExcel = async (req, res) => {
+  try {
+    let vaiyavachis = await Vaiyavachi.find(
+      { isPaid: "paid" },
+      {
+        vaiyavachiImage: 0,
+        isActive: 0,
+        _id: 0,
+        reminderSent: 0,
+        isConfoirmSeat: 0,
+        updatedAt: 0,
+        __v: 0,
+      }
+    ).sort({ vaiyavachNo: 1 });
 
-// Get summary of paid and unpaid Vaiyavach records
+    // Format dob into dd/mm/yyyy
+    vaiyavachis = vaiyavachis.map((y) => {
+      const obj = y.toObject(); // convert mongoose doc to plain object
+      if (obj.dob) {
+        const date = new Date(obj.dob);
+        const dd = String(date.getDate()).padStart(2, "0");
+        const mm = String(date.getMonth() + 1).padStart(2, "0"); // months start from 0
+        const yyyy = date.getFullYear();
+        obj.dob = `${dd}/${mm}/${yyyy}`;
+      }
+      return obj;
+    });
+
+    res.status(200).json({ vaiyavachis });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

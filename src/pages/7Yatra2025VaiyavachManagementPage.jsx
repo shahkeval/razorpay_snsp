@@ -151,12 +151,29 @@ const Yatra2025VaiyavachManagementPage = () => {
     []
   );
 
-  const handleExcelDownload = () => {
-    const data = vaiyavachis.map(({ _id, __v, ...rest }) => rest);
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Vaiyavachis');
-    XLSX.writeFile(workbook, '7yatra2025_vaiyavachis.xlsx');
+  const handleExcelDownload = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/vaiyavach/fetch-for-excel`);
+      const data = res.data.vaiyavachis || [];
+      
+      // Reorder data to ensure vaiyavachNo is first
+      const reorderedData = data.map(item => {
+        const { vaiyavachNo, ...rest } = item;
+        return { vaiyavachNo, ...rest };
+      });
+      
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(reorderedData);
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Vaiyavachis');
+      XLSX.writeFile(workbook, '7yatra2025_vaiyavachis.xlsx');
+      
+      setSnackbar({ open: true, message: 'Excel file downloaded successfully', severity: 'success' });
+    } catch (error) {
+      setSnackbar({ open: true, message: 'Failed to download Excel file', severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const table = useMaterialReactTable({

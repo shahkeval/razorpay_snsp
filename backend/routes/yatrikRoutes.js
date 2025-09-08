@@ -31,4 +31,9 @@ router.get('/allpayments', yatrikController.getAllPayments);
 // Get summary of paid and unpaid Yatrik records
 router.get('/payment-status-summary', yatrikController.getYatrikPaymentStatusSummary);
 
+// Fetch Yatriks for Excel export
+router.get('/fetch-for-excel', yatrikController.fetchYatriksForExcel);
+
+router.get('/fetch-for-excel-payments', yatrikController.fetchPaymentsForExcel);
+
 module.exports = router; 

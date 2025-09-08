@@ -26,4 +26,6 @@ router.put('/update_paint/:id', paintingRSSMController.updateRegistration);
 // Delete registration by ID
 router.delete('/delete/:id', paintingRSSMController.deleteRegistration);
 
+router.get('/fetch-for-excel', paintingRSSMController.fetchpaintsForExcel);
+
 module.exports = router; 

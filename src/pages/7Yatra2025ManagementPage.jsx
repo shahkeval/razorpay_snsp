@@ -140,12 +140,29 @@ const Yatra2025ManagementPage = () => {
     []
   );
 
-  const handleExcelDownload = () => {
-    const data = yatriks.map(({ _id, __v, ...rest }) => rest);
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Yatriks');
-    XLSX.writeFile(workbook, '7yatra2025_yatriks.xlsx');
+  const handleExcelDownload = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/yatriks/fetch-for-excel`);
+      const data = res.data.yatriks || [];
+      
+      // Reorder data to ensure yatrikNo is first
+      const reorderedData = data.map(item => {
+        const { yatrikNo, ...rest } = item;
+        return { yatrikNo, ...rest };
+      });
+      
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(reorderedData);
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Yatriks');
+      XLSX.writeFile(workbook, '7yatra2025_yatriks.xlsx');
+      
+      setSnackbar({ open: true, message: 'Excel file downloaded successfully', severity: 'success' });
+    } catch (error) {
+      setSnackbar({ open: true, message: 'Failed to download Excel file', severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const table = useMaterialReactTable({

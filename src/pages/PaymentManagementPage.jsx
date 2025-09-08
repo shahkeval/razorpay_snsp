@@ -107,12 +107,29 @@ const PaymentManagementPage = () => {
     []
   );
 
-  const handleExcelDownload = () => {
-    const data = payments.map(({ _id, __v, ...rest }) => rest);
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Payments');
-    XLSX.writeFile(workbook, 'payments.xlsx');
+  const handleExcelDownload = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/yatriks/fetch-for-excel-payments`);
+      const data = res.data.payments || [];
+
+      // Ensure column order: yatrikNo, vaiyavachiNo, mobileNumber, then others
+      const reordered = data.map(item => {
+        const { yatrikNo, vaiyavachiNo, mobileNumber, ...rest } = item;
+        return { yatrikNo, vaiyavachiNo, mobileNumber, ...rest };
+      });
+
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(reordered);
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Payments');
+      XLSX.writeFile(workbook, 'payments.xlsx');
+
+      setSnackbar({ open: true, message: 'Excel file downloaded successfully', severity: 'success' });
+    } catch (error) {
+      setSnackbar({ open: true, message: 'Failed to download Excel file', severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const table = useMaterialReactTable({
