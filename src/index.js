@@ -29,6 +29,7 @@ import Yatra2025ManagementPage from './pages/7Yatra2025ManagementPage';
 import Yatra2025VaiyavachManagementPage from './pages/7Yatra2025VaiyavachManagementPage';
 import PaymentManagementPage from './pages/PaymentManagementPage';
 import PaintingRegistrationManagementPage from './pages/PaintingRegistrationManagementPage';
+import AudiencePoll from './pages/AudiencePoll';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -63,6 +64,7 @@ root.render(
           <Route path="/admin/7yatra2025vaiyavachmanagement" element={<Yatra2025VaiyavachManagementPage/>} />
           <Route path="/admin/paymentmanagement" element={<PaymentManagementPage/>} />
           <Route path="/admin/painting-registrations" element={<PaintingRegistrationManagementPage/>} />
+          <Route path="audience-poll" element={<AudiencePoll />} />
         </Route>
       </Routes>
     </Router>
