@@ -64,7 +64,7 @@ root.render(
           <Route path="/admin/7yatra2025vaiyavachmanagement" element={<Yatra2025VaiyavachManagementPage/>} />
           <Route path="/admin/paymentmanagement" element={<PaymentManagementPage/>} />
           <Route path="/admin/painting-registrations" element={<PaintingRegistrationManagementPage/>} />
-          <Route path="audience-poll" element={<AudiencePoll />} />
+          {/* <Route path="audience-poll" element={<AudiencePoll />} /> */}
         </Route>
       </Routes>
     </Router>

@@ -58,7 +58,7 @@ const Navbar = () => {
         <li><Link to="/donation" onClick={closeMenu}>Donation</Link></li>
         <li><Link to="/gallery" onClick={closeMenu}>Gallery</Link></li>
         <li><Link to="/contactus" onClick={closeMenu}>Contact</Link></li>
-        <li><Link to="/audience-poll" onClick={closeMenu}>Audience Poll</Link></li>
+        {/* <li><Link to="/audience-poll" onClick={closeMenu}>Audience Poll</Link></li> */}
         {isLoggedIn && (
           <li style={{cursor:"pointer"}} onClick={handleLogout}><LogoutIcon/></li> // Logout button
         )}
