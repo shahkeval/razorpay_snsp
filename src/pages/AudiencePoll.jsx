@@ -47,13 +47,15 @@ const AudiencePoll = () => {
   // Format: { id: 'unique-id', name: 'Display Name', category: 'vaktrutva_kala' or 'sangit_kala' }
   const [persons] = useState([
     // Vaktrutva Kala contestants
-    { id: 'Keval', name: 'Keval Shah', category: CATEGORIES.VAKTRUTVA_KALA },
-    { id: 'Ratnam', name: 'Ratnam Shah', category: CATEGORIES.VAKTRUTVA_KALA },
-    { id: 'Goyam', name: 'Goyam Shah', category: CATEGORIES.VAKTRUTVA_KALA },
+    { id: 'Aarya nagori', name: 'Aarya nagori', category: CATEGORIES.VAKTRUTVA_KALA },
+    { id: 'Naksh', name: 'Naksh', category: CATEGORIES.VAKTRUTVA_KALA },
+    { id: 'Aashvi', name: 'Aashvi', category: CATEGORIES.VAKTRUTVA_KALA },
     // Sangit Kala contestants
-    { id: 'Dhruvi', name: 'Dhruvi Shah', category: CATEGORIES.SANGIT_KALA },
-    { id: 'Demo', name: 'Demo Shah', category: CATEGORIES.SANGIT_KALA },
-  ]);
+    { id: 'Lay Shah', name: 'Lay Shah', category: CATEGORIES.SANGIT_KALA },
+    { id: 'Hriday Jain', name: 'Hriday Jain', category: CATEGORIES.SANGIT_KALA },
+    { id: 'Devam Shah', name: 'Devam Shah', category: CATEGORIES.SANGIT_KALA },
+    { id: 'Hem Shah', name: 'Hem Shah', category: CATEGORIES.SANGIT_KALA },
+  ]); 
 
   const [activeCategory, setActiveCategory] = useState(CATEGORIES.VAKTRUTVA_KALA);
   const [votes, setVotes] = useState({}); // Structure: { category: { personId: voteCount } }
