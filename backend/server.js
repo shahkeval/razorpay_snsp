@@ -1,64 +1,87 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const connectDB = require('./config/db');
-const bodyParser = require('body-parser');
-const multer = require('multer');
-const path = require('path');
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
+const connectDB = require("./config/db");
+const bodyParser = require("body-parser");
+const multer = require("multer");
+const path = require("path");
 
 // const rssmsuRoutes = require('./routes/rssmsu')
 // // Load env vars
 dotenv.config();
 console.log("MONGODB_URI:1", process.env.MONGODB_URI);
- 
+
 // Connect to database
 connectDB();
- 
-console.log("MONGODB_URI:2", process.env.MONGODB_URI);
- 
 
+console.log("MONGODB_URI:2", process.env.MONGODB_URI);
 
 const app = express();
 
 // Serve yatrik uploads statically
-app.use('/uploads/yatrik', express.static(path.join(__dirname, 'upload/7_jatra_yatriks_2025')));
+app.use(
+  "/uploads/yatrik",
+  express.static(path.join(__dirname, "upload/7_jatra_yatriks_2025"))
+);
 // Serve vaiyavach uploads statically
-app.use('/uploads/vaiyavach', express.static(path.join(__dirname, 'upload/7_jatra_viyavach_2025')));
+app.use(
+  "/uploads/vaiyavach",
+  express.static(path.join(__dirname, "upload/7_jatra_viyavach_2025"))
+);
+// Serve astaprakari uploads statically
+app.use(
+  "/uploads/astaprakari",
+  express.static(path.join(__dirname, "upload/astaprakari_puja_26"))
+);
 
 // Body parser
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // Enable CORS with specific allowed origins
 const allowedOrigins = [
-  'http://localhost:3000',
-  'https://namonamahshaswatparivar.in', // Add your frontend URL(s) here
+  "http://localhost:3000",
+  "https://namonamahshaswatparivar.in", // Add your frontend URL(s) here
   // 'https://your-production-frontend.com',
 ];
-app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+  })
+);
 
 // Mount routers
-app.use('/api/donations', require('./routes/donationRoutes'));
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/rssmsu', require('./routes/rssmsu'));
-app.use('/api/yatriks', require('./routes/yatrikRoutes'));
-app.use('/api/vaiyavach', require('./routes/vaiyavchRoutes'));
-app.use('/api/painting_rssm', require('./routes/paintingRSSM'));
-app.use('/api/logs', require('./routes/log'));
+app.use("/api/donations", require("./routes/donationRoutes"));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/rssmsu", require("./routes/rssmsu"));
+app.use("/api/yatriks", require("./routes/yatrikRoutes"));
+app.use("/api/vaiyavach", require("./routes/vaiyavchRoutes"));
+app.use("/api/painting_rssm", require("./routes/paintingRSSM"));
+app.use("/api/astaprakari", require("./routes/astaprakariPujaRoutes"));
+app.use("/api/logs", require("./routes/log"));
 
 // Razorpay webhook endpoint (ensure raw body for signature verification)
-app.post('/api/yatriks/razorpay-webhook', bodyParser.raw({ type: '*/*' }), require('./controllers/yatrikController').razorpayWebhook);
+app.post(
+  "/api/yatriks/razorpay-webhook",
+  bodyParser.raw({ type: "*/*" }),
+  require("./controllers/yatrikController").razorpayWebhook
+);
+// Astaprakari webhook endpoint (raw body for signature verification)
+app.post(
+  "/api/astaprakari/razorpay-webhook",
+  bodyParser.raw({ type: "*/*" }),
+  require("./controllers/astaprakaripujaController").razorpayWebhook
+);
 
 // Multer/global error handler
 app.use(function (err, req, res, next) {
@@ -74,10 +97,12 @@ app.use(function (err, req, res, next) {
 
 const PORT = process.env.PORT || 5000;
 
-app.get('/', async (req, res) => {
+app.get("/", async (req, res) => {
   res.json("WORKING");
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-}); 
+  console.log(
+    `Server is running in ${process.env.NODE_ENV} mode on port ${PORT}`
+  );
+});

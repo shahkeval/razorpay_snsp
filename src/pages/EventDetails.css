@@ -460,6 +460,12 @@ form {
   text-align: center;
 }
 
+/* Input error state for forms */
+.input-error {
+  border: 1px solid #e53935;
+  border-radius: 6px;
+}
+
 .success-message {
   color: green;
   margin-top: 1rem;

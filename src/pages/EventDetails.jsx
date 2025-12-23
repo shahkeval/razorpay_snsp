@@ -11,6 +11,7 @@ import emailjs from "emailjs-com"; // Import EmailJS
 import axios from "axios";
 import YatrikForm2025 from "./YatrikForm2025";
 import VaiyavachForm2025 from "./VaiyavachForm2025";
+import AstaprakariPujaForm26 from "./astaprakariPujaForm26";
 import PaintingCompitationRSSM from "./painting_compitation_RSSM";
 
 const EventDetails = () => {
@@ -233,11 +234,115 @@ const EventDetails = () => {
   // State to hold registration number from backend
   const [registrationNumber, setRegistrationNumber] = useState(null);
 
+  // Dedicated polling for Astaprakari payments
   useEffect(() => {
-    // Check for Razorpay payment params in URL
     const params = getQueryParams(location.search);
+    const isAstaprakari =
+      !!sessionStorage.getItem("astaprakari") || params.astaprakari === "1";
 
     if (
+      isAstaprakari &&
+      params.razorpay_payment_id &&
+      params.razorpay_payment_link_id &&
+      params.razorpay_signature &&
+      params.razorpay_payment_link_status
+    ) {
+      setPaymentStatus("verifying");
+      const paymentLinkId = params.razorpay_payment_link_id;
+      let pollCount = 0;
+      const MAX_POLLS = 15;
+
+      const poll = setInterval(async () => {
+        const element = document.getElementById("thankTop");
+        if (element)
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        // count this attempt first so timeout works even when requests fail (network/server errors)
+        pollCount++;
+
+        try {
+          const res = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/astaprakari/verify-payment?orderId=${paymentLinkId}`
+          );
+
+          // Handle various statuses explicitly
+          if (res.data.status === "paid") {
+            setPaymentStatus("paid");
+            setPaymentThankYou(true);
+            // Accept multiple possible number fields returned by backend
+            const no =
+              res.data.No ||
+              res.data.yatrikNo ||
+              res.data.registrationNo ||
+              res.data.astaprakariNo;
+            if (no) setRegistrationNumber(no);
+            sessionStorage.removeItem("astaprakari");
+            clearInterval(poll);
+            return;
+          }
+
+          if (res.data.status === "cancelled" || res.data.status === "failed") {
+            setPaymentStatus("error");
+            setPaymentError(
+              "Payment was cancelled or failed. Please contact support."
+            );
+            sessionStorage.removeItem("astaprakari");
+            clearInterval(poll);
+            return;
+          }
+
+          // timeout check even when the response doesn't indicate failure or success
+          if (pollCount > MAX_POLLS) {
+            setPaymentStatus("error");
+            setPaymentError(
+              "Payment verification timed out. Please refresh or contact support. Phone:-7383120787"
+            );
+            sessionStorage.removeItem("astaprakari");
+            clearInterval(poll);
+            return;
+          }
+        } catch (err) {
+          if (!err.response) {
+            console.warn(
+              "Astaprakari verify network error, attempt",
+              pollCount
+            );
+            setPaymentError("Server unavailable — retrying verification...");
+            // if we've exceeded retries, time out
+            if (pollCount > MAX_POLLS) {
+              setPaymentStatus("error");
+              setPaymentError(
+                "Payment verification timed out. Please refresh or contact support. Phone:-7383120787"
+              );
+              sessionStorage.removeItem("astaprakari");
+              clearInterval(poll);
+              return;
+            }
+            // otherwise keep polling
+          } else {
+            setPaymentStatus("error");
+            setPaymentError(
+              "Payment verification failed. Please refresh or contact support. Phone:-7383120787"
+            );
+            sessionStorage.removeItem("astaprakari");
+            clearInterval(poll);
+            return;
+          }
+        }
+      }, 4000);
+
+      return () => clearInterval(poll);
+    }
+  }, [location.search]);
+
+  // Polling for non-Astaprakari (Yatrik / general) payments
+  useEffect(() => {
+    const params = getQueryParams(location.search);
+    const isAstaprakari =
+      !!sessionStorage.getItem("astaprakari") || params.astaprakari === "1";
+
+    if (
+      !isAstaprakari &&
       params.razorpay_payment_id &&
       params.razorpay_payment_link_id &&
       params.razorpay_signature &&
@@ -245,42 +350,73 @@ const EventDetails = () => {
     ) {
       setPaymentStatus("verifying");
 
-      // Call backend to verify payment using payment_link_id
       const paymentLinkId = params.razorpay_payment_link_id;
       let pollCount = 0;
+      const MAX_POLLS = 15;
+
       const poll = setInterval(async () => {
         const element = document.getElementById("thankTop");
-        if (element) {
+        if (element)
           element.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
+
+        pollCount++;
+
         try {
           const res = await axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/api/yatriks/verify-payment?orderId=${paymentLinkId}`
           );
+
           if (res.data.status === "paid") {
             setPaymentStatus("paid");
             setPaymentThankYou(true);
-            if (res.data.No) {
-              setRegistrationNumber(res.data.No);
-            }
+            const no =
+              res.data.No || res.data.yatrikNo || res.data.registrationNo;
+            if (no) setRegistrationNumber(no);
             clearInterval(poll);
-          } else if (pollCount > 15) {
-            // Timeout after ~1min
+            return;
+          }
+
+          if (res.data.status === "cancelled" || res.data.status === "failed") {
             setPaymentStatus("error");
             setPaymentError(
-              "Payment verification failed. Please refresh or Please contact support. Phone:-7383120787"
+              "Payment was cancelled or failed. Please contact support."
             );
             clearInterval(poll);
+            return;
+          }
+
+          if (pollCount > MAX_POLLS) {
+            setPaymentStatus("error");
+            setPaymentError(
+              "Payment verification timed out. Please refresh or contact support. Phone:-7383120787"
+            );
+            clearInterval(poll);
+            return;
           }
         } catch (err) {
-          setPaymentStatus("error");
-          setPaymentError(
-            "Payment verification failed. Please refresh or Please contact support. Phone:-7383120787"
-          );
-          clearInterval(poll);
+          if (!err.response) {
+            console.warn("Yatrik verify network error, attempt", pollCount);
+            setPaymentError("Server unavailable — retrying verification...");
+            if (pollCount > MAX_POLLS) {
+              setPaymentStatus("error");
+              setPaymentError(
+                "Payment verification timed out. Please refresh or contact support. Phone:-7383120787"
+              );
+              clearInterval(poll);
+              return;
+            }
+            // keep polling until timeout
+          } else {
+            setPaymentStatus("error");
+            setPaymentError(
+              "Payment verification failed. Please refresh or contact support. Phone:-7383120787"
+            );
+            clearInterval(poll);
+            return;
+          }
         }
-        pollCount++;
       }, 4000);
+
       return () => clearInterval(poll);
     }
   }, [location.search]);
@@ -301,7 +437,9 @@ const EventDetails = () => {
     ) {
       setPaymentStatus("verifying");
       let pollCount = 0;
+      const MAX_POLLS = 15;
       const poll = setInterval(async () => {
+        pollCount++;
         try {
           const res = await axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/api/vaiyavach/verifyvaiyavachpayment?orderId=${params.razorpay_payment_link_id}`
@@ -313,22 +451,39 @@ const EventDetails = () => {
               setRegistrationNumber(res.data.No);
             }
             clearInterval(poll);
-          } else if (pollCount > 15) {
+            return;
+          }
+
+          if (pollCount > MAX_POLLS) {
             // Timeout after ~1min
             setPaymentStatus("error");
             setPaymentError(
               "Payment verification failed. Please refresh or Please contact support. Phone:-7383120787"
             );
             clearInterval(poll);
+            return;
           }
         } catch (err) {
-          setPaymentStatus("error");
-          setPaymentError(
-            "Payment verification failed. Please refresh or Please contact support. Phone:-7383120787"
-          );
-          clearInterval(poll);
+          if (!err.response) {
+            console.warn("Vaiyavach verify network error, attempt", pollCount);
+            setPaymentError("Server unavailable — retrying verification...");
+            if (pollCount > MAX_POLLS) {
+              setPaymentStatus("error");
+              setPaymentError(
+                "Payment verification failed. Please refresh or Please contact support. Phone:-7383120787"
+              );
+              clearInterval(poll);
+              return;
+            }
+          } else {
+            setPaymentStatus("error");
+            setPaymentError(
+              "Payment verification failed. Please refresh or Please contact support. Phone:-7383120787"
+            );
+            clearInterval(poll);
+            return;
+          }
         }
-        pollCount++;
       }, 4000);
       return () => clearInterval(poll);
     }
@@ -1500,105 +1655,122 @@ const EventDetails = () => {
                         </>
                       ) : (
                         <>
-                          {event.id === "7-YATRA-2026" ? (
-                            <div>
-                              {/* Step 1: Type Selection */}
-                              {registrationType === "" && (
-                                <div
+                          {event.id === "AstPrakariPuja-2026" ? (
+                            <AstaprakariPujaForm26
+                              event={event}
+                              onComplete={() => setRegistrationType("")}
+                            />
+                          ) : event.id === "7-YATRA-2026" ? (
+                            <div
+                              className="registration-closed-message"
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                background: "#fff8e1",
+                                border: "1px solid #ffe082",
+                                borderRadius: "16px",
+                                padding: "32px 16px",
+                                margin: "32px 0",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
+                              }}
+                            >
+                              <h3
+                                style={{
+                                  color: "#b71c1c",
+                                  marginBottom: 12,
+                                  fontWeight: 700,
+                                  fontSize: "2rem",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Registration Closed
+                              </h3>
+                              <p
+                                style={{
+                                  color: "#333",
+                                  fontSize: "1.1rem",
+                                  textAlign: "center",
+                                  marginBottom: 12,
+                                  maxWidth: 400,
+                                }}
+                              >
+                                Thank you for your interest!
+                                <br />
+                                Registration for this event is now closed.
+                                <br />
+                                <span
+                                  style={{ color: "#075e54", fontWeight: 600 }}
+                                >
+                                  Want updates on our next events?
+                                </span>
+                                <br />
+                                Join our WhatsApp group below to stay informed
+                                and connected.
+                              </p>
+                              <p
+                                style={{
+                                  color: "#333",
+                                  fontSize: "1.1rem",
+                                  textAlign: "center",
+                                  marginBottom: 24,
+                                  maxWidth: 400,
+                                  fontFamily:
+                                    "Noto Sans Gujarati, Arial, sans-serif",
+                                }}
+                              >
+                                તમારી રુચિ બદલ આભાર!
+                                <br />
+                                આ કાર્યક્રમ માટે નોંધણી હવે બંધ છે.
+                                <br />
+                                <span
+                                  style={{ color: "#075e54", fontWeight: 600 }}
+                                >
+                                  શું તમે અમારી આગામી કાર્યક્રમો વિશે અપડેટ્સ
+                                  મેળવવા માંગો છો?
+                                </span>
+                                <br />
+                                માહિતી અને સંપર્કમાં રહેવા માટે નીચે આપેલા અમારા
+                                WhatsApp ગ્રુપમાં જોડાઓ.
+                              </p>
+                              <a
+                                href="https://chat.whatsapp.com/DdNY8vdh03K0cPouuBZupT"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  textDecoration: "none",
+                                }}
+                              >
+                                <QRCodeSVG
+                                  value="https://chat.whatsapp.com/J2jj56NdGw4LUD4WYkRkVt"
+                                  size={160}
                                   style={{
-                                    marginTop: "1.5rem",
-                                    marginBottom: "1.5rem",
+                                    border: "4px solid #25d366",
+                                    borderRadius: 12,
+                                    background: "#fff",
+                                    cursor: "pointer",
+                                    marginBottom: 8,
+                                    transition: "box-shadow 0.2s",
+                                    boxShadow:
+                                      "0 2px 8px rgba(37,211,102,0.15)",
+                                  }}
+                                />
+                                <span
+                                  style={{
+                                    color: "#075e54",
+                                    fontWeight: 600,
+                                    fontSize: "1rem",
+                                    marginTop: 4,
+                                    textAlign: "center",
                                   }}
                                 >
-                                  <h1
-                                    style={{
-                                      fontSize: "1.6rem",
-                                      fontWeight: 700,
-                                      marginBottom: "1rem",
-                                      color: "#800000",
-                                      textAlign: "center",
-                                    }}
-                                  >
-                                    Which type you want to register
-                                  </h1>
-                                  <div
-                                    style={{
-                                      fontSize: "1.1rem",
-                                      fontWeight: 600,
-                                      marginBottom: "0.7rem",
-                                      color: "#333",
-                                      textAlign: "center",
-                                      letterSpacing: "0.5px",
-                                    }}
-                                  >
-                                    Register as:
-                                  </div>
-                                  <div className="form-group">
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        gap: "2rem",
-                                        margin: "0.5rem 0 1rem 0",
-                                        justifyContent: "center",
-                                      }}
-                                    >
-                                      <label
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: "0.3rem",
-                                        }}
-                                      >
-                                        <input
-                                          type="radio"
-                                          name="registrationType"
-                                          value="yatrik"
-                                          checked={
-                                            registrationType === "yatrik"
-                                          }
-                                          onChange={() =>
-                                            setRegistrationType("yatrik")
-                                          }
-                                        />{" "}
-                                        Yatrik
-                                      </label>
-                                      <label
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: "0.3rem",
-                                        }}
-                                      >
-                                        <input
-                                          type="radio"
-                                          name="registrationType"
-                                          value="vaiyavach"
-                                          checked={
-                                            registrationType === "vaiyavach"
-                                          }
-                                          onChange={() =>
-                                            setRegistrationType("vaiyavach")
-                                          }
-                                        />{" "}
-                                        Vaiyavach
-                                      </label>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                              {/* Step 2: Yatrik or Vaiyavach Form */}
-                              {registrationType === "yatrik" && (
-                                <YatrikForm2025
-                                  event={event}
-                                  onComplete={() => setRegistrationType("")}
-                                />
-                              )}
-                              {registrationType === "vaiyavach" && (
-                                <VaiyavachForm2025
-                                  event={event}
-                                  onComplete={() => setRegistrationType("")}
-                                />
-                              )}
+                                  Tap QR or click here to join WhatsApp group
+                                </span>
+                              </a>
                             </div>
                           ) : event.id === "drawing-competition" ? (
                             <div
@@ -1648,8 +1820,9 @@ const EventDetails = () => {
                                 <br />
                                 Join our WhatsApp group below to stay informed
                                 and connected.
-                                <p  style={{ color: "red", fontWeight: 600 }} >
-                                Phone Numbers:- +91 79845 47655 , +91 96249 72659
+                                <p style={{ color: "red", fontWeight: 600 }}>
+                                  Phone Numbers:- +91 79845 47655 , +91 96249
+                                  72659
                                 </p>
                               </p>
                               <p
