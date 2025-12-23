@@ -188,7 +188,7 @@ const PaymentManagementPage = () => {
           <MaterialReactTable table={table} className="registration-table" />
         </div>
       </div>
-      <Footer />
+      {/* <Footer /> */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}

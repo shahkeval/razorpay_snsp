@@ -284,7 +284,7 @@ const DonationManagement = () => {
           </DialogActions>
         </Dialog>
       </div>
-      <Footer />
+      {/* <Footer /> */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}

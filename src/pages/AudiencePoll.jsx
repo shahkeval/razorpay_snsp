@@ -350,7 +350,7 @@ const AudiencePoll = () => {
             Loading poll...
           </Typography>
         </Box>
-        <Footer />
+        {/* <Footer /> */}
       </>
     );
   }
@@ -611,7 +611,7 @@ const AudiencePoll = () => {
           </Card>
         </Box>
       </div>
-      <Footer />
+      {/* <Footer /> */}
       
       <Snackbar
         open={snackbar.open}

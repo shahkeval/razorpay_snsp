@@ -104,7 +104,7 @@ const Home = () => {
       </div>
 
       <div>
-        <Footer /> {/* Add the Footer component here */}
+        {/* <Footer /> Add the Footer component here */}
       </div>
     </>
   );

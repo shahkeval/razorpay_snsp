@@ -223,7 +223,7 @@ const Gallery = () => {
         </div>
       )}
     </div>
-    <Footer/>
+    {/* <Footer/> */}
     </>
   );
 };

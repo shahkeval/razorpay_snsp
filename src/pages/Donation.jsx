@@ -134,7 +134,7 @@ const Donation = () => {
         </div>
       )}
     </div>
-    <Footer/>
+    {/* <Footer/> */}
     </>
   );
 };

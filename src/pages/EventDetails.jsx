@@ -12,6 +12,7 @@ import axios from "axios";
 import YatrikForm2025 from "./YatrikForm2025";
 import VaiyavachForm2025 from "./VaiyavachForm2025";
 import AstaprakariPujaForm26 from "./astaprakariPujaForm26";
+import MaintenancePage, { MaintenanceCard } from "./maintenance_page";
 import PaintingCompitationRSSM from "./painting_compitation_RSSM";
 
 const EventDetails = () => {
@@ -576,6 +577,11 @@ const EventDetails = () => {
         </Link>
       </div>
     );
+  }
+
+  // If this event is under maintenance, render the maintenance page only
+  if (event && event.mode === "maintenance") {
+    return <MaintenancePage />;
   }
 
   // const handleDonationChange = (e) => {
@@ -1992,7 +1998,7 @@ const EventDetails = () => {
           </div>
         </div>
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };

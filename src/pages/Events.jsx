@@ -84,7 +84,7 @@ const Events = ({flag}) => {
         )}
       </div>
     </div>
-    <Footer/>
+    {/* <Footer/> */}
     </>
   );
 };
