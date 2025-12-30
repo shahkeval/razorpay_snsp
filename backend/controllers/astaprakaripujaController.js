@@ -287,7 +287,7 @@ exports.verifyPayment = async (req, res) => {
 
     if (razorpayRes.status === "paid") {
       payment.status = "paid";
-      payment.amount = "5000";
+      payment.amount = "2000";
       payment.method = razorpayRes.payment
         ? razorpayRes.payment.method
         : payment.method;
