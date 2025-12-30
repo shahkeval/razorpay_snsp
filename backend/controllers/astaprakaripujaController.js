@@ -187,7 +187,7 @@ exports.createPaymentLink = [
         orderId: paymentLink.id,
         paymentId: paymentLink.payment_id || "",
         signature: "",
-        amount: 500,
+        amount: 200,
         currency: "INR",
         status: "created",
         link: paymentLink.short_url,
