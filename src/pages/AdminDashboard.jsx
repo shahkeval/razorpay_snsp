@@ -34,6 +34,7 @@ const AdminDashboard = () => {
   const [donationSummary, setDonationSummary] = useState({ totalAmount: 0, byCategory: [] });
   const [registrationSummary, setRegistrationSummary] = useState({ totalCount: 0, byCategory: [] });
   const [yatraSummary, setYatraSummary] = useState({ totalRecords: 0, oldCategoryCount: 0, newCategoryCount: 0 });
+  const [astaprakriSummary, setastaprakriSummary] = useState({ totalRecords: 0, directPalitanaCount: 0, withusPalitanaCount: 0 });
   const [paymentSummary, setPaymentSummary] = useState({ paid: 0, unpaid: 0 });
   const [vaiyavachSummary, setVaiyavachSummary] = useState({ totalRecords: 0, twoDaysCount: 0, fourDaysCount: 0 });
   const [paintingSummary, setPaintingSummary] = useState({ totalCount: 0, byPaintingType: [] });
@@ -41,6 +42,7 @@ const AdminDashboard = () => {
   const [loadingDonations, setLoadingDonations] = useState(true);
   const [loadingRegistrations, setLoadingRegistrations] = useState(true);
   const [loadingYatra, setLoadingYatra] = useState(true);
+  const [loadingastaprakari, setloadingastaprakari] = useState(true);
   const [loadingPayments, setLoadingPayments] = useState(true);
   const [loadingVaiyavach, setLoadingVaiyavach] = useState(true);
   const [loadingPainting, setLoadingPainting] = useState(true);
@@ -105,6 +107,18 @@ const AdminDashboard = () => {
       setLoadingVaiyavach(false);
     };
 
+
+    const fetchastaprakarisummary = async () => {
+     setloadingastaprakari(true);
+     try {
+       const res = await axios.get(`${API_BASE_URL}/api/astaprakari/getHowtoreachSummary`);
+       setastaprakriSummary(res.data);
+      } catch (error) {
+        setastaprakriSummary({ totalRecords: 0, directPalitanaCount: 0, withusPalitanaCount: 0 });
+      }
+      setloadingastaprakari(false);
+    };
+
     const fetchPaintingSummary = async () => {
       setLoadingPainting(true);
       try {
@@ -130,6 +144,7 @@ const AdminDashboard = () => {
     fetchDonationSummary();
     fetchRegistrationSummary();
     fetchYatraSummary();
+    fetchastaprakarisummary();
     fetchPaymentSummary();
     fetchVaiyavachSummary();
     fetchPaintingSummary();
@@ -151,6 +166,11 @@ const AdminDashboard = () => {
     { category: 'New Yatrik', count: yatraSummary.newCategoryCount },
     { category: 'Old Yatrik', count: yatraSummary.oldCategoryCount },
   ];
+
+  const astaprakriDonutData = [
+    { category: 'Direct', count: astaprakriSummary.directPalitanaCount },
+    { category: 'With Us', count: astaprakriSummary.withusPalitanaCount },
+  ]
 
   // Prepare donut data for Payments (dynamic by status)
   const paymentsDonutData = Object.entries(paymentSummary).map(([status, count]) => ({
@@ -232,6 +252,16 @@ const AdminDashboard = () => {
       nameKey: 'ageGroup',
       total: paintingAgeSummary.totalCount,
       knowMore: () => navigate('/admin/painting-registrations'),
+      totalSuffix: ''
+    },
+        {
+      label: 'Astaprakari Puja Registrations',
+      key: 'astaprakari',
+      data: astaprakriDonutData,
+      dataKey: 'count',
+      nameKey: 'category',
+      total: astaprakriSummary.totalRecords,
+      knowMore: () => navigate('/admin/astaprakaripuja'),
       totalSuffix: ''
     },
   ].map((item, idx) => (

@@ -319,3 +319,166 @@ exports.verifyPayment = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// 4. Admin: Get all Astaprakari Puja registrations with filters, pagination, sorting
+exports.getAllAstaprakariPuja = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = "createdAt",
+      order = "desc",
+      search = "",
+      ...filters
+    } = req.query;
+
+    // Default: only PAID entries
+    let filter = { isPaid: "paid" };
+
+    /* ------------------------------
+       Column-wise filtering
+    -------------------------------*/
+    Object.keys(filters).forEach((key) => {
+      if (
+        filters[key] &&
+        !["page", "limit", "sortBy", "order", "search"].includes(key)
+      ) {
+        // Boolean fields handling
+        if (["isActive", "isConfoirmSeat"].includes(key)) {
+          const val = String(filters[key]).toLowerCase();
+          if (val === "true" || val === "false") {
+            filter[key] = val === "true";
+          } else {
+            filter[key] = { $regex: filters[key], $options: "i" };
+          }
+        } else {
+          filter[key] = { $regex: filters[key], $options: "i" };
+        }
+      }
+    });
+
+    /* ------------------------------
+       Global search
+    -------------------------------*/
+    if (search) {
+      filter.$or = [
+        { yatrikNo: { $regex: search, $options: "i" } },
+        { name: { $regex: search, $options: "i" } },
+        { mobileNumber: { $regex: search, $options: "i" } },
+        { whatsappNumber: { $regex: search, $options: "i" } },
+        { emailAddress: { $regex: search, $options: "i" } },
+        { education: { $regex: search, $options: "i" } },
+        { religiousEducation: { $regex: search, $options: "i" } },
+        { weight: { $regex: search, $options: "i" } },
+        { height: { $regex: search, $options: "i" } },
+        { address: { $regex: search, $options: "i" } },
+        { city: { $regex: search, $options: "i" } },
+        { state: { $regex: search, $options: "i" } },
+        { familyMemberName: { $regex: search, $options: "i" } },
+        { relation: { $regex: search, $options: "i" } },
+        { familyMemberWANumber: { $regex: search, $options: "i" } },
+        { emergencyNumber: { $regex: search, $options: "i" } },
+        { howToReachPalitana: { $regex: search, $options: "i" } },
+        { paymentLink: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    /* ------------------------------
+       Pagination
+    -------------------------------*/
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const total = await Astaprakari.countDocuments(filter);
+
+    const records = await Astaprakari.find(filter)
+      .select("-isActive -isConfoirmSeat -updatedAt")
+      .sort({ [sortBy]: order === "desc" ? 1 : -1 }) // FIXED
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    /* ------------------------------
+       Response
+    -------------------------------*/
+    res.status(200).json({
+      success: true,
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      data: records,
+    });
+
+  } catch (error) {
+    console.error("Astaprakari Fetch Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+exports.getHowToReachSummary = async (req, res) => {
+  try {
+    const totalRecords = await Astaprakari.countDocuments({
+      isPaid: "paid",
+    });
+
+    const directPalitanaCount = await Astaprakari.countDocuments({
+      howToReachPalitana: "direct_palitana",
+      isPaid: "paid",
+    });
+
+    const withusPalitanaCount = await Astaprakari.countDocuments({
+      howToReachPalitana: "with_us",
+      isPaid: "paid",
+    });
+
+    res.status(200).json({
+      totalRecords,
+      directPalitanaCount,
+      withusPalitanaCount,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.fetchAstaprakariForExcel = async (req, res) => {
+  try {
+    let records = await Astaprakari.find(
+      { isPaid: "paid" },
+      {
+        yatrikPhoto: 0,
+        isActive: 0,
+        _id: 0,
+        isConfoirmSeat: 0,
+        updatedAt: 0,
+        __v: 0,
+      }
+    ).sort({ yatrikNo: 1 });
+
+    // Format DOB to dd/mm/yyyy
+    records = records.map((r) => {
+      const obj = r.toObject();
+      if (obj.dob) {
+        const date = new Date(obj.dob);
+        const dd = String(date.getDate()).padStart(2, "0");
+        const mm = String(date.getMonth() + 1).padStart(2, "0");
+        const yyyy = date.getFullYear();
+        obj.dob = `${dd}/${mm}/${yyyy}`;
+      }
+      return obj;
+    });
+
+    res.status(200).json({
+      success: true,
+      records,
+    });
+
+  } catch (error) {
+    console.error("Astaprakari Excel Fetch Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

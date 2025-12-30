@@ -65,8 +65,12 @@ const Home = () => {
                 Chauvihar Chhath kari Giriraj Ni 7 Yatra
               </Link>
             </li>
+            <li style={{ color: "red" }}>
+              <Link to="/events/AstPrakariPuja-2026">
+              Giriraj Nav-tunk Pratimaji Ashtprakari Puja
+              </Link>
+            </li>
             <li>Shetrunjay Nadi Nahi Ne Anusthan</li>
-            <li>Giriraj Nav-tunk Pratimaji Ashtprakari Puja</li>
             <li>Palkhi Yatra</li>
             <li>Guru Bhagwant Vaiyavach</li>
             <li>Shasan Prabhavna</li>
