@@ -1,4 +1,5 @@
 const Yatrik = require("../models/7jatrayatrik-25");
+const Astaprakari = require("../models/astaprakari_puja-26");
 const Payment = require("../models/Payment");
 const Vaiyavachi = require("../models/7jatravaiyavachi-25");
 const path = require("path");
@@ -605,7 +606,7 @@ exports.getAllPayments = async (req, res) => {
     let yatrikNoSet = null;
     let vaiyavachNoSet = null;
     if (mobileNumberFilter) {
-      const yatriks = await Yatrik.find(
+      const yatriks = await Astaprakari.find(
         { mobileNumber: { $regex: mobileNumberFilter, $options: "i" } },
         "yatrikNo"
       );
@@ -636,7 +637,7 @@ exports.getAllPayments = async (req, res) => {
     const yatrikMap = {};
     const vaiyavachMap = {};
     if (yatrikNos.length > 0) {
-      const yatriks = await Yatrik.find(
+      const yatriks = await Astaprakari.find(
         { yatrikNo: { $in: yatrikNos } },
         "yatrikNo mobileNumber"
       );
