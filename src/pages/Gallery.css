@@ -306,3 +306,90 @@
   }
   
 }
+.gallery-loader {
+  grid-column: 1 / -1;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  width: 46px;
+  height: 46px;
+  border: 4px solid #ddd;
+  border-top: 4px solid #700b0b;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.view-more-container {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.view-more-btn {
+  padding: 10px 22px;
+  border-radius: 30px;
+  background: #700b0b;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.view-more-btn:hover {
+  transform: scale(1.05);
+}
+/* ============================= */
+/* Download Button (Modal) */
+/* ============================= */
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Push download + close to right */
+.download-btn {
+  margin-left: auto;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #8c4b00, #700b0b);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+/* Hover effect */
+.download-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #700b0b, #8c4b00);
+}
+
+/* Active click */
+.download-btn:active {
+  transform: scale(0.95);
+}
+
+/* Mobile friendly */
+@media (max-width: 600px) {
+  .download-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}

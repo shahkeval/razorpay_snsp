@@ -1,27 +1,60 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './Gallery.css';
-import Footer from '../components/Footer';
+
+const CLOUD_NAME = 'dpr1x8m0b';
 
 const Gallery = () => {
-  // Define categories with their images
+  // ===============================
+  // JATRA (PAGINATED)
+  // ===============================
+  const [jatraImages, setJatraImages] = useState([]);
+  const [jatraLoading, setJatraLoading] = useState(true);
+  const [jatraCursor, setJatraCursor] = useState(null);
+  const [jatraTotal, setJatraTotal] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const fetchJatraImages = async (loadMore = false) => {
+    try {
+      loadMore ? setLoadingMore(true) : setJatraLoading(true);
+
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/api/auth/gallery/day-1`,
+        {
+          params: {
+            cursor: loadMore ? jatraCursor : undefined,
+          },
+        }
+      );
+
+      const newImages = res.data.images.map((img, index) => ({
+        src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${img.public_id}`,
+        alt: `7 Jatra Day 1 - Image ${jatraImages.length + index + 1}`,
+      }));
+
+      setJatraImages((prev) =>
+        loadMore ? [...prev, ...newImages] : newImages
+      );
+
+      setJatraCursor(res.data.nextCursor);
+      setJatraTotal(res.data.total);
+    } catch (error) {
+      console.error('Failed to load Jatra images:', error);
+    } finally {
+      setJatraLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchJatraImages(false);
+  }, []);
+
+  // ===============================
+  // CATEGORIES
+  // ===============================
   const categories = [
-    {
-      id: 'jatra',
-      name: '7 Jatra',
-      images: [
-        { src: '/images/jatra/yatra1.JPG', alt: 'Jatra Image 1' },
-        { src: '/images/jatra/yatra2.JPG', alt: 'Jatra Image 2' },
-        { src: '/images/jatra/yatra3.JPG', alt: 'Jatra Image 3' },
-        { src: '/images/jatra/yatra4.jpg', alt: 'Jatra Image 4' },
-        { src: '/images/jatra/yatra5.jpg', alt: 'Jatra Image 5' },
-        { src: '/images/jatra/yatra6.jpg', alt: 'Jatra Image 6' },
-        { src: '/images/jatra/yatra7.jpg', alt: 'Jatra Image 7' },
-        { src: '/images/jatra/yatra8.jpg', alt: 'Jatra Image 8' },
-        { src: '/images/jatra/yatra9.jpg', alt: 'Jatra Image 9' },
-        { src: '/images/jatra/yatra10.jpg', alt: 'Jatra Image 10' },
-        { src: '/images/jatra/yatra11.jpg', alt: 'Jatra Image 11' },
-      ]
-    },
+    { id: 'jatra', name: '7 Jatra 2026', images: jatraImages },
     {
       id: 'palkhi',
       name: 'Palkhi Yatra',
@@ -36,23 +69,23 @@ const Gallery = () => {
         { src: '/images/palkhi/palkhi8.jpg', alt: 'Palkhi Image 8' },
         { src: '/images/palkhi/palkhi9.jpg', alt: 'Palkhi Image 9' },
         { src: '/images/palkhi/palkhi10.jpg', alt: 'Palkhi Image 10' },
-      ]
+      ],
     },
     {
       id: 'jiv daya',
       name: 'Jiv Daya',
       images: [
-        { src: '/images/jiv/jiv1.jpg', alt: 'jiv Image 1' },
-        { src: '/images/jiv/jiv2.jpg', alt: 'jiv Image 2' },
-        { src: '/images/jiv/jiv3.jpg', alt: 'jiv Image 3' },
-        { src: '/images/jiv/jiv4.jpg', alt: 'jiv Image 4' },
-        { src: '/images/jiv/jiv5.jpg', alt: 'jiv Image 5' },
-        { src: '/images/jiv/jiv6.jpg', alt: 'jiv Image 6' },
-        { src: '/images/jiv/jiv7.jpg', alt: 'jiv Image 7' },
-      ]
+        { src: '/images/jiv/jiv1.jpg', alt: 'Jiv Image 1' },
+        { src: '/images/jiv/jiv2.jpg', alt: 'Jiv Image 2' },
+        { src: '/images/jiv/jiv3.jpg', alt: 'Jiv Image 3' },
+        { src: '/images/jiv/jiv4.jpg', alt: 'Jiv Image 4' },
+        { src: '/images/jiv/jiv5.jpg', alt: 'Jiv Image 5' },
+        { src: '/images/jiv/jiv6.jpg', alt: 'Jiv Image 6' },
+        { src: '/images/jiv/jiv7.jpg', alt: 'Jiv Image 7' },
+      ],
     },
     {
-      id: 'anukampa ',
+      id: 'anukampa',
       name: 'Anukampa',
       images: [
         { src: '/images/anukampa/anu1.jpg', alt: 'Anukampa Image 1' },
@@ -66,91 +99,110 @@ const Gallery = () => {
         { src: '/images/anukampa/anu9.jpg', alt: 'Anukampa Image 9' },
         { src: '/images/anukampa/anu10.jpg', alt: 'Anukampa Image 10' },
         { src: '/images/anukampa/anu11.jpg', alt: 'Anukampa Image 11' },
-      ]
+      ],
     },
-    // You can add more categories as needed
   ];
 
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
   const [showModal, setShowModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [isViewMoreModal, setIsViewMoreModal] = useState(false);
 
-  // Handle category change
+  useEffect(() => {
+    if (selectedCategory.id === 'jatra') {
+      setSelectedCategory(categories[0]);
+    }
+  }, [jatraImages]);
+
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
-    setSelectedImage(null);
-    setShowModal(false);
+    closeModal();
   };
 
-  // Open image modal
   const openImageModal = (image, index) => {
     setSelectedImage(image);
     setSelectedImageIndex(index);
     setShowModal(true);
-    setIsViewMoreModal(false);
   };
 
-  // Open view more modal
-  const openViewMoreModal = () => {
-    setIsViewMoreModal(true);
-    setShowModal(true);
-    setSelectedImageIndex(0);
-    setSelectedImage(selectedCategory.images[0]);
-  };
+const nextImage = async () => {
+  const images = selectedCategory.images;
 
-  // Navigate to next image
-  const nextImage = () => {
-    const images = selectedCategory.images;
-    const nextIndex = (selectedImageIndex + 1) % images.length;
+  // 🟢 If next image exists in already loaded images
+  if (selectedImageIndex + 1 < images.length) {
+    const nextIndex = selectedImageIndex + 1;
     setSelectedImage(images[nextIndex]);
     setSelectedImageIndex(nextIndex);
+    return;
+  }
+
+  // 🟡 If Jatra & more images exist on server → fetch next batch
+  if (
+    selectedCategory.id === 'jatra' &&
+    jatraCursor &&
+    !loadingMore
+  ) {
+    try {
+      setLoadingMore(true);
+
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/api/auth/gallery/day-1`,
+        {
+          params: { cursor: jatraCursor },
+        }
+      );
+
+      const newImages = res.data.images.map((img, index) => ({
+        src: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${img.public_id}`,
+        alt: `7 Jatra Day 1 - Image ${jatraImages.length + index + 1}`,
+      }));
+
+      setJatraImages((prev) => [...prev, ...newImages]);
+      setJatraCursor(res.data.nextCursor);
+
+      // 👉 Move modal to first image of newly loaded batch
+      const nextIndex = images.length;
+      setSelectedImageIndex(nextIndex);
+      setSelectedImage({
+        src: newImages[0].src,
+        alt: newImages[0].alt,
+      });
+    } catch (err) {
+      console.error('Failed to load next images:', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+};
+
+
+const prevImage = () => {
+  if (selectedImageIndex === 0) return;
+
+  const prevIndex = selectedImageIndex - 1;
+  setSelectedImage(selectedCategory.images[prevIndex]);
+  setSelectedImageIndex(prevIndex);
+};
+
+  const closeModal = () => setShowModal(false);
+
+  // ===============================
+  // DOWNLOAD URL
+  // ===============================
+  const getDownloadUrl = (src) => {
+    if (src.includes('res.cloudinary.com')) {
+      return src.replace('/image/upload/', '/image/upload/fl_attachment/');
+    }
+    return src;
   };
-
-  // Navigate to previous image
-  const prevImage = () => {
-    const images = selectedCategory.images;
-    const prevIndex = (selectedImageIndex - 1 + images.length) % images.length;
-    setSelectedImage(images[prevIndex]);
-    setSelectedImageIndex(prevIndex);
-  };
-
-  // Close modal
-  const closeModal = () => {
-    setShowModal(false);
-    setIsViewMoreModal(false);
-  };
-
-  // Handle keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (!showModal) return;
-      
-      if (e.key === 'Escape') {
-        closeModal();
-      } else if (e.key === 'ArrowRight') {
-        nextImage();
-      } else if (e.key === 'ArrowLeft') {
-        prevImage();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [showModal, selectedImageIndex]);
 
   return (
-    <>
     <div className="gallery-container">
       <h1>Photo Gallery</h1>
-      
-      {/* Category Navigation */}
+
       <div className="category-nav">
-        {categories.map(category => (
-          <button 
+        {categories.map((category) => (
+          <button
             key={category.id}
             className={`category-btn ${selectedCategory.id === category.id ? 'active' : ''}`}
             onClick={() => handleCategoryChange(category)}
@@ -160,71 +212,81 @@ const Gallery = () => {
         ))}
       </div>
 
-      {/* Current Category Title */}
       <h2 className="category-title">{selectedCategory.name}</h2>
-      
-      {/* Gallery Grid */}
+
       <div className="gallery-grid">
-        {selectedCategory.images.slice(0, 5).map((image, index) => (
-          <div 
-            key={index} 
-            className="gallery-item"
-            onClick={() => openImageModal(image, index)}
-          >
-            <img src={image.src} alt={image.alt} />
-            <div className="overlay">
-              <span>View</span>
-            </div>
+        {selectedCategory.id === 'jatra' && jatraLoading ? (
+          <div className="gallery-loader">
+            <div className="spinner"></div>
+            <p>Loading Jatra memories...</p>
           </div>
-        ))}
-        
-        {/* View More Button (if more than 6 images) */}
-        {selectedCategory.images.length > 6 && (
-          <div className="view-more-container">
-            <button className="view-more-btn" onClick={openViewMoreModal}>
-              View More
-            </button>
-          </div>
+        ) : (
+          <>
+            {selectedCategory.images.slice(0, jatraTotal).map((image, index) => (
+              <div
+                key={index}
+                className="gallery-item"
+                onClick={() => openImageModal(image, index)}
+              >
+                <img src={image.src} alt={image.alt} />
+                <div className="overlay"><span>View</span></div>
+              </div>
+            ))}
+
+            {selectedCategory.id === 'jatra' &&
+              jatraImages.length < jatraTotal && (
+                <div className="view-more-container">
+                  <button
+                    className="view-more-btn"
+                    onClick={() => fetchJatraImages(true)}
+                    disabled={loadingMore}
+                  >
+                    {loadingMore ? 'Loading...' : 'View More'}
+                  </button>
+                  <p className="image-count">
+                    Showing {jatraImages.length} of {jatraTotal}
+                  </p>
+                </div>
+              )}
+          </>
         )}
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            {/* Modal Header */}
             <div className="modal-header">
-              <h3>{isViewMoreModal ? `All ${selectedCategory.name} Images` : selectedImage.alt}</h3>
+              <h3>{selectedImage.alt}</h3>
+
+              <a
+                href={getDownloadUrl(selectedImage.src)}
+                download={!selectedImage.src.includes('res.cloudinary.com')}
+                className="download-btn"
+              >
+                ⬇ Download
+              </a>
+
               <button className="close-btn" onClick={closeModal}>×</button>
             </div>
-            
-            {/* Modal Body */}
+
             <div className="modal-body">
-              <img 
-                src={selectedImage.src} 
-                alt={selectedImage.alt} 
-                className="modal-image" 
-              />
-              
-              {/* Navigation Controls */}
+              <img src={selectedImage.src} alt={selectedImage.alt} className="modal-image" />
               <div className="modal-nav">
-                <button className="nav-btn prev-btn" onClick={prevImage}>
-                  &#10094;
-                </button>
-                <div className="image-counter">
-                  {selectedImageIndex + 1} / {selectedCategory.images.length}
-                </div>
-                <button className="nav-btn next-btn" onClick={nextImage}>
-                  &#10095;
-                </button>
+                <button className="nav-btn" onClick={prevImage}>&#10094;</button>
+                <span>
+                  {selectedImageIndex + 1} /{" "}
+                  {selectedCategory.id === "jatra"
+                    ? jatraTotal
+                    : selectedCategory.images.length}
+                </span>
+
+                <button className="nav-btn" onClick={nextImage}>&#10095;</button>
               </div>
             </div>
           </div>
         </div>
       )}
     </div>
-    {/* <Footer/> */}
-    </>
   );
 };
 
