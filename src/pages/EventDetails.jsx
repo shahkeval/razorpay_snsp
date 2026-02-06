@@ -1661,12 +1661,8 @@ const EventDetails = () => {
                         </>
                       ) : (
                         <>
-                          {event.id === "AstPrakariPuja-2026" ? (
-                            <AstaprakariPujaForm26
-                              event={event}
-                              onComplete={() => setRegistrationType("")}
-                            />
-                          ) : event.id === "7-YATRA-2026" ? (
+                          {event.id === "AstPrakariPuja-2026" ||
+                            event.id === "7-YATRA-2026" ? (
                             <div
                               className="registration-closed-message"
                               style={{
