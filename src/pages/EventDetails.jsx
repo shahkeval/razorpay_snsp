@@ -74,6 +74,24 @@ const EventDetails = () => {
     message: "",
   });
 
+  const [chaturmasikForm, setChaturmasikForm] = useState({
+    fullName: "",
+    phone: "",
+    address: "",
+    state: "",
+    city: "",
+    sanghName: "",
+    samayik: "",
+    navkar: "",
+    swadhyay: false,
+    brahmacharya: false,
+    brahmacharyaPartnerName: "",
+    dateOfBirth: "",
+  });
+
+  const [chaturmasikStep, setChaturmasikStep] = useState(1);
+  const [submittedChaturmasikData, setSubmittedChaturmasikData] = useState(null);
+
   const [isSubmittingDonation, setIsSubmittingDonation] = useState(false);
   const [isSubmittingRegistration, setIsSubmittingRegistration] =
     useState(false);
@@ -608,6 +626,158 @@ const EventDetails = () => {
     }));
   };
 
+  const handleChaturmasikChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setChaturmasikForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleChaturmasikSubmit = (e) => {
+    e.preventDefault();
+    if (chaturmasikStep === 1) {
+      setChaturmasikStep(2);
+    } else if (chaturmasikStep === 2) {
+      setChaturmasikStep(3);
+    } else if (chaturmasikStep === 3) {
+      setChaturmasikStep(4);
+    } else if (chaturmasikStep === 4) {
+      setChaturmasikStep(5);
+    } else if (chaturmasikStep === 5) {
+      setChaturmasikStep(6);
+    }
+  };
+
+  const handleChaturmasikSkip = () => {
+    setChaturmasikForm((prev) => ({
+      ...prev,
+      samayik: "", // Skip doesn't select a value or keeps it blank
+    }));
+    setChaturmasikStep(3);
+  };
+
+  const handleChaturmasikSkipNavkar = () => {
+    setChaturmasikForm((prev) => ({
+      ...prev,
+      navkar: "", // Skip doesn't select a value or keeps it blank
+    }));
+    setChaturmasikStep(4);
+  };
+
+  const handleChaturmasikSkipSwadhyay = () => {
+    setChaturmasikForm((prev) => ({
+      ...prev,
+      swadhyay: false,
+    }));
+    setChaturmasikStep(5);
+  };
+
+  const handleChaturmasikSkipBrahmacharya = () => {
+    setChaturmasikForm((prev) => ({
+      ...prev,
+      brahmacharya: false,
+      brahmacharyaPartnerName: "",
+    }));
+    setChaturmasikStep(6);
+  };
+
+  const handleChaturmasikBack = () => {
+    setChaturmasikStep((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleChaturmasikFinalSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmittingRegistration(true);
+    try {
+      const payload = {
+        name: chaturmasikForm.fullName,
+        phone: chaturmasikForm.phone,
+        dateOfBirth: chaturmasikForm.dateOfBirth,
+        address: chaturmasikForm.address,
+        state: "Gujarat",
+        city: chaturmasikForm.city,
+        sanghName: chaturmasikForm.sanghName,
+        samayik: chaturmasikForm.samayik || "",
+        navkar: chaturmasikForm.navkar || "",
+        swadhyay: !!chaturmasikForm.swadhyay,
+        brahmacharya: !!chaturmasikForm.brahmacharya,
+        brahmacharyaPartnerName: chaturmasikForm.brahmacharyaPartnerName || "",
+      };
+
+      console.log("Submitting Chaturmasik Form payload:", payload);
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/chaturmasik`,
+        payload
+      );
+
+      setSubmittedChaturmasikData(response.data);
+
+      setShowThankYouMessage(true);
+      setFormType("chaturmasik");
+    } catch (err) {
+      console.error("Submission failed:", err);
+      alert(err.response?.data?.error || "Registration failed. Please try again.");
+    } finally {
+      setIsSubmittingRegistration(false);
+    }
+  };
+
+  const loadScript = (src) => {
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${src}"]`);
+      if (existing) { resolve(); return; }
+      const s = document.createElement("script");
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.body.appendChild(s);
+    });
+  };
+
+  const handleDownloadIdCard = async () => {
+    if (!submittedChaturmasikData) return;
+    try {
+      // Load dom-to-image-more (uses SVG foreignObject = perfect Gujarati text)
+      // Load jsPDF for direct PDF download
+      await loadScript("https://cdn.jsdelivr.net/npm/dom-to-image-more@3/dist/dom-to-image-more.min.js");
+      await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+
+      const element = document.getElementById("chaturmasik-id-card-pdf-template");
+      if (!element) return;
+
+      const scale = 3;
+      const w = element.offsetWidth;
+      const h = element.offsetHeight;
+
+      // Capture as high-res PNG using dom-to-image (SVG foreignObject preserves native text rendering)
+      const dataUrl = await window.domtoimage.toPng(element, {
+        width: w * scale,
+        height: h * scale,
+        style: {
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+          width: w + "px",
+          height: h + "px",
+        },
+      });
+
+      // Create PDF and auto-download
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "in",
+        format: [3.5, 5.5],
+      });
+
+      pdf.addImage(dataUrl, "PNG", 0, 0, 3.5, 5.5);
+      pdf.save(`${submittedChaturmasikData.chaturmasikNo}.pdf`);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      alert("Failed to generate PDF. Please try again.");
+    }
+  };
+
   // const handleDonationSubmit = (e) => {
   //   e.preventDefault();
   //   setIsSubmittingDonation(true);
@@ -690,8 +860,22 @@ const EventDetails = () => {
   const handleSubmitAnotherForm = () => {
     setShowThankYouMessage(false); // Hide thank you message
     setRegistrationType(""); // Go back to radio selection
-    // Reset form data if needed
-    // Optionally, you can also reset the form fields here
+    setChaturmasikStep(1);
+    setSubmittedChaturmasikData(null);
+    setChaturmasikForm({
+      fullName: "",
+      phone: "",
+      address: "",
+      state: "",
+      city: "",
+      sanghName: "",
+      samayik: "",
+      navkar: "",
+      swadhyay: false,
+      brahmacharya: false,
+      brahmacharyaPartnerName: "",
+      dateOfBirth: "",
+    });
   };
 
   const toggleDonationForm = () => {
@@ -1032,6 +1216,18 @@ const EventDetails = () => {
                 </div>
               </div>
 
+              {event.end_date && (
+                <div className="meta-item">
+                  <DateRangeIcon />
+                  <div>
+                    <h4>End Date</h4>
+                    <p style={{ textAlign: "start", color: "#4a4a4a" }}>
+                      {event.end_date}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {event.location && (
                 <div className="meta-item">
                   <LocationPinIcon />
@@ -1176,9 +1372,8 @@ const EventDetails = () => {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="modal-header">
-                        <h3>{`${event.title} - image ${
-                          eventImageIndex + 1
-                        }`}</h3>
+                        <h3>{`${event.title} - image ${eventImageIndex + 1
+                          }`}</h3>
                         <button
                           className="close-btn"
                           onClick={closeEventImageModal}
@@ -1384,12 +1579,178 @@ const EventDetails = () => {
                         Your registration has been submitted successfully. We
                         will contact you with more details soon.
                       </p>
-                      <button
-                        onClick={handleSubmitAnotherForm}
-                        className="submit-another-form-btn"
-                      >
-                        Submit Another Form
-                      </button>
+
+                      {formType === "chaturmasik" && submittedChaturmasikData && (
+                        <div style={{ display: "flex", justifyContent: "center", margin: "20px auto" }}>
+                          <div
+                            id="chaturmasik-id-card-pdf-template"
+                            style={{
+                              width: "336px",
+                              height: "528px",
+                              padding: "6px",
+                              background: "#fff8f0",
+                              border: "3px solid #700b0b",
+                              borderRadius: "12px",
+                              fontFamily: "'Noto Sans Gujarati', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                              boxSizing: "border-box",
+                              display: "flex",
+                              flexDirection: "column",
+                              justifyContent: "space-between",
+                              textAlign: "left",
+                              boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                border: "1px solid #700b0b",
+                                borderRadius: "8px",
+                                padding: "12px",
+                                boxSizing: "border-box",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <div style={{ textAlign: "center" }}>
+                                <div style={{ fontSize: "10px", color: "#700b0b", fontWeight: "bold", marginBottom: "2px" }}>
+                                  || શ્રી આદિનાથાય નમઃ ||
+                                </div>
+                                <div style={{ fontSize: "7px", color: "#333", fontWeight: "600", marginBottom: "2px", lineHeight: "1.3" }}>
+                                  !! ૐ હ્રીં શ્રી સિદ્ધિ-મેઘ-મનોહર-ભદ્રંકરસુરી-રવિપ્રભવિજય સદ્ ગુરૂભ્યો નમ: !!
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: "8px",          // Increased text size
+                                    color: "#700b0b",
+                                    fontWeight: "700",
+                                    background: "#fdf2e9",
+                                    border: "1px solid #ffd8b3",
+                                    borderRadius: "6px",
+                                    padding: "6px 12px",      // Increased box height & width
+                                    marginBottom: "10px",
+                                    lineHeight: "1.6",
+                                    display: "inline-block",
+                                    width: "100%",            // Makes the box wider
+                                    maxWidth: "100%",
+                                    boxSizing: "border-box",
+                                    textAlign: "center",      // Optional: Center the text
+                                  }}
+                                >
+                                  પ્રેરણા :- <strong>બાપજી મહારાજ ના સમુદાયના ગચ્છાધિપતિ આચાર્ય ભગવંત શ્રી નરરત્નસૂરીશ્વરજી મ સા</strong>
+                                </div>
+                                <h4 style={{ margin: "0 0 8px 0", color: "#700b0b", fontSize: "14px", fontWeight: "bold", letterSpacing: "0.5px" }}>
+                                  આયોજક :- નામો નમઃ શાશ્વત પરિવાર
+                                </h4>
+                                <h3 style={{ margin: "0 0 10px 0", color: "#333", fontSize: "16px", borderBottom: "2px solid #700b0b", paddingBottom: "6px" }}>
+                                  ચાતુર્માસિક આરાધના ૨૦૨૬
+                                </h3>
+
+                                <div style={{ background: "#700b0b", color: "white", padding: "5px 10px", borderRadius: "20px", display: "inline-block", fontWeight: "bold", fontSize: "11px", marginBottom: "12px", whiteSpace: "nowrap" }}>
+                                  આરાધક ક્રમાંક: {submittedChaturmasikData.chaturmasikNo}
+                                </div>
+
+                                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "12px", color: "#333", marginBottom: "12px" }}>
+                                  <tbody>
+                                    <tr>
+                                      <td style={{ padding: "3px 0", fontWeight: "bold", width: "40%" }}>નામ (Name):</td>
+                                      <td style={{ padding: "3px 0" }}>{submittedChaturmasikData.name}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style={{ padding: "3px 0", fontWeight: "bold" }}>ફોન (Phone):</td>
+                                      <td style={{ padding: "3px 0" }}>{submittedChaturmasikData.phone}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style={{ padding: "3px 0", fontWeight: "bold" }}>જન્મ તારીખ:</td>
+                                      <td style={{ padding: "3px 0" }}>
+                                        {new Date(submittedChaturmasikData.dateOfBirth).toLocaleDateString("en-GB")}
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td style={{ padding: "3px 0", fontWeight: "bold" }}>શહેર (City):</td>
+                                      <td style={{ padding: "3px 0" }}>{submittedChaturmasikData.city}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style={{ padding: "3px 0", fontWeight: "bold" }}>સંઘનું નામ:</td>
+                                      <td style={{ padding: "3px 0" }}>{submittedChaturmasikData.sanghName}</td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+
+                                <h4 style={{ margin: "3px 0 6px 0", color: "#700b0b", fontSize: "13px", borderBottom: "1px dashed #700b0b", paddingBottom: "3px", textAlign: "center", fontWeight: "bold" }}>
+                                  આરાધના સંકલ્પ (Goals)
+                                </h4>
+
+                                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "12px", color: "#333" }}>
+                                  <tbody>
+                                    <tr>
+                                      <td style={{ padding: "3px 0", fontWeight: "bold", width: "50%" }}>૧. સામાયિક:</td>
+                                      <td style={{ padding: "3px 0", color: "#700b0b", fontWeight: "bold" }}>
+                                        {submittedChaturmasikData.samayik ? `${submittedChaturmasikData.samayik} સામાયિક` : "લાગુ પડતું નથી"}
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td style={{ padding: "3px 0", fontWeight: "bold" }}>૨. નવકાર મંત્ર:</td>
+                                      <td style={{ padding: "3px 0", color: "#700b0b", fontWeight: "bold" }}>
+                                        {submittedChaturmasikData.navkar ? `${submittedChaturmasikData.navkar} માળા (રોજ)` : "લાગુ પડતું નથી"}
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td style={{ padding: "3px 0", fontWeight: "bold" }}>૩. સ્વાધ્યાય:</td>
+                                      <td style={{ padding: "3px 0", color: "#700b0b", fontWeight: "bold" }}>
+                                        {submittedChaturmasikData.swadhyay ? "અરિહંત વંદનાવલી" : "લાગુ પડતું નથી"}
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td style={{ padding: "3px 0", fontWeight: "bold" }}>૪. બ્રહ્મચર્ય:</td>
+                                      <td style={{ padding: "3px 0", color: "#700b0b", fontWeight: "bold" }}>
+                                        {submittedChaturmasikData.brahmacharya ? "સજોડે વ્રત" : "લાગુ પડતું નથી"}
+                                      </td>
+                                    </tr>
+                                    {submittedChaturmasikData.brahmacharya && (
+                                      <tr>
+                                        <td style={{ padding: "1px 0 3px 15px", fontSize: "11px", color: "#666" }} colSpan="2">
+                                          └ સાથીદાર: <span style={{ color: "#700b0b", fontWeight: "bold" }}>{submittedChaturmasikData.brahmacharyaPartnerName}</span>
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+
+                              <div style={{ marginTop: "10px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderTop: "1px solid #ddd", paddingTop: "6px" }}>
+                                <div style={{ fontSize: "9px", color: "#666", textAlign: "left", maxWidth: "60%", lineHeight: "1.2" }}>
+                                  * આ આરાધના કાર્ડ ૧૦૦ દિવસ પૂર્ણ થયા બાદ જમા કરાવવાનું રહેશે.
+                                </div>
+                                <div style={{ textAlign: "center" }}>
+                                  <div style={{ width: "70px", borderBottom: "1px solid #700b0b", marginBottom: "3px" }}></div>
+                                  <div style={{ fontSize: "9px", color: "#700b0b", fontWeight: "bold" }}>આયોજક સહી</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "center", marginTop: "15px" }}>
+                        {formType === "chaturmasik" && submittedChaturmasikData && (
+                          <button
+                            onClick={handleDownloadIdCard}
+                            className="submit-another-form-btn"
+                            style={{ margin: 0, width: "200px", backgroundColor: "#075e54" }}
+                          >
+                            Download ID Card
+                          </button>
+                        )}
+                        <button
+                          onClick={handleSubmitAnotherForm}
+                          className="submit-another-form-btn"
+                          style={{ margin: 0, width: "200px" }}
+                        >
+                          Submit Another Form
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <>
@@ -1890,6 +2251,471 @@ const EventDetails = () => {
                                 </span>
                               </a>
                             </div>
+                          ) : event.id === "chaturmashik_aradhna_2026" ? (
+                            <>
+                              <h2>Chaturmasik Registration</h2>
+                              <div className="progress-bar">
+                                <div
+                                  className="progress"
+                                  style={{
+                                    width: `${((chaturmasikStep - 1) / 5) * 100}%`,
+                                  }}
+                                ></div>
+                              </div>
+
+                              {chaturmasikStep === 1 && (
+                                <form onSubmit={handleChaturmasikSubmit}>
+                                  <div className="form-group">
+                                    <label htmlFor="chaturmasikFullName">Name*</label>
+                                    <input
+                                      type="text"
+                                      id="chaturmasikFullName"
+                                      name="fullName"
+                                      placeholder="Enter your full name"
+                                      value={chaturmasikForm.fullName}
+                                      onChange={handleChaturmasikChange}
+                                      required
+                                    />
+                                  </div>
+                                  <div className="form-group">
+                                    <label htmlFor="chaturmasikPhone">Phone Number*</label>
+                                    <input
+                                      type="tel"
+                                      id="chaturmasikPhone"
+                                      name="phone"
+                                      placeholder="Enter your phone number"
+                                      value={chaturmasikForm.phone}
+                                      onChange={handleChaturmasikChange}
+                                      required
+                                    />
+                                  </div>
+                                  <div className="form-group">
+                                    <label htmlFor="chaturmasikDateOfBirth">Date of Birth*</label>
+                                    <input
+                                      type="date"
+                                      id="chaturmasikDateOfBirth"
+                                      name="dateOfBirth"
+                                      value={chaturmasikForm.dateOfBirth}
+                                      onChange={handleChaturmasikChange}
+                                      required
+                                    />
+                                  </div>
+                                  <div className="form-group">
+                                    <label htmlFor="chaturmasikAddress">Address*</label>
+                                    <textarea
+                                      id="chaturmasikAddress"
+                                      name="address"
+                                      placeholder="Enter your address"
+                                      rows="3"
+                                      style={{ maxWidth: "316px" }}
+                                      value={chaturmasikForm.address}
+                                      onChange={handleChaturmasikChange}
+                                      required
+                                    ></textarea>
+                                  </div>
+                                  <div className="form-group">
+                                    <label htmlFor="chaturmasikState">State*</label>
+                                    <input
+                                      type="text"
+                                      id="chaturmasikState"
+                                      name="state"
+                                      value="Gujarat"
+                                      readOnly
+                                      required
+                                    />
+                                  </div>
+                                  <div className="form-group">
+                                    <label htmlFor="chaturmasikCity">City*</label>
+                                    <select
+                                      id="chaturmasikCity"
+                                      name="city"
+                                      value={chaturmasikForm.city}
+                                      onChange={handleChaturmasikChange}
+                                      required
+                                    >
+                                      <option value="">Select City</option>
+                                      {cities.filter(c => c.stateCode === "GJ").map((city) => (
+                                        <option key={city.name} value={city.name}>
+                                          {city.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div className="form-group">
+                                    <label htmlFor="chaturmasikSanghName">Sangh Name*</label>
+                                    <input
+                                      type="text"
+                                      id="chaturmasikSanghName"
+                                      name="sanghName"
+                                      placeholder="Enter your Sangh name"
+                                      value={chaturmasikForm.sanghName}
+                                      onChange={handleChaturmasikChange}
+                                      required
+                                    />
+                                  </div>
+                                  <button
+                                    type="submit"
+                                    className="next-button"
+                                  >
+                                    Next
+                                  </button>
+                                </form>
+                              )}
+
+                              {chaturmasikStep === 2 && (
+                                <form onSubmit={handleChaturmasikSubmit}>
+                                  <h3 style={{ textAlign: "center", color: "#075e54", marginBottom: "15px" }}>
+                                    સામાયિક
+                                  </h3>
+
+                                  <div className="rules-note" style={{ background: "#fff8e1", border: "1px solid #ffe082", borderRadius: "8px", padding: "10px", marginBottom: "15px" }}>
+                                    <p style={{ margin: 0, color: "#b71c1c", fontWeight: "bold", fontSize: "0.95rem" }}>
+                                      Note: This is for only boys.
+                                    </p>
+                                    <p style={{ margin: "5px 0 0 0", color: "#333", fontSize: "0.9rem" }}>
+                                      Total days: 100 days.
+                                    </p>
+                                  </div>
+
+                                  <div className="form-group">
+                                    <label style={{ fontWeight: "bold", display: "block", marginBottom: "10px" }}>
+                                      Select Samayik Target:
+                                    </label>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", paddingLeft: "5px" }}>
+                                      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                                        <input
+                                          type="radio"
+                                          name="samayik"
+                                          value="99"
+                                          checked={chaturmasikForm.samayik === "99"}
+                                          onChange={handleChaturmasikChange}
+                                        />
+                                        99 Samayik
+                                      </label>
+                                      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                                        <input
+                                          type="radio"
+                                          name="samayik"
+                                          value="72"
+                                          checked={chaturmasikForm.samayik === "72"}
+                                          onChange={handleChaturmasikChange}
+                                        />
+                                        72 Samayik
+                                      </label>
+                                      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                                        <input
+                                          type="radio"
+                                          name="samayik"
+                                          value="54"
+                                          checked={chaturmasikForm.samayik === "54"}
+                                          onChange={handleChaturmasikChange}
+                                        />
+                                        54 Samayik
+                                      </label>
+                                    </div>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    className="back-button-yatra"
+                                    onClick={handleChaturmasikBack}
+                                  >
+                                    Back
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="back-button-yatra"
+                                    style={{ background: "#e0e0e0", color: "#333" }}
+                                    onClick={handleChaturmasikSkip}
+                                  >
+                                    Skip
+                                  </button>
+                                  <button
+                                    type="submit"
+                                    className="next-button"
+                                    disabled={!chaturmasikForm.samayik}
+                                  >
+                                    Next
+                                  </button>
+                                </form>
+                              )}
+
+                              {chaturmasikStep === 3 && (
+                                <form onSubmit={handleChaturmasikSubmit}>
+                                  <h3 style={{ textAlign: "center", color: "#075e54", marginBottom: "15px" }}>
+                                    નવકાર મંત્ર
+                                  </h3>
+
+                                  <div className="rules-note" style={{ background: "#fff8e1", border: "1px solid #ffe082", borderRadius: "8px", padding: "10px", marginBottom: "15px" }}>
+                                    <p style={{ margin: 0, color: "#333", fontSize: "0.95rem" }}>
+                                      Total days: 100 days.
+                                    </p>
+                                  </div>
+
+                                  <div className="form-group">
+                                    <label style={{ fontWeight: "bold", display: "block", marginBottom: "10px" }}>
+                                      Select daily Navkar Mantra target:
+                                    </label>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", paddingLeft: "5px" }}>
+                                      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                                        <input
+                                          type="radio"
+                                          name="navkar"
+                                          value="10"
+                                          checked={chaturmasikForm.navkar === "10"}
+                                          onChange={handleChaturmasikChange}
+                                        />
+                                        10 Mala everyday
+                                      </label>
+                                      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                                        <input
+                                          type="radio"
+                                          name="navkar"
+                                          value="5"
+                                          checked={chaturmasikForm.navkar === "5"}
+                                          onChange={handleChaturmasikChange}
+                                        />
+                                        5 Mala everyday
+                                      </label>
+                                      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                                        <input
+                                          type="radio"
+                                          name="navkar"
+                                          value="2"
+                                          checked={chaturmasikForm.navkar === "2"}
+                                          onChange={handleChaturmasikChange}
+                                        />
+                                        2 Mala everyday
+                                      </label>
+                                    </div>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    className="back-button-yatra"
+                                    onClick={handleChaturmasikBack}
+                                  >
+                                    Back
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="back-button-yatra"
+                                    style={{ background: "#e0e0e0", color: "#333" }}
+                                    onClick={handleChaturmasikSkipNavkar}
+                                  >
+                                    Skip
+                                  </button>
+                                  <button
+                                    type="submit"
+                                    className="next-button"
+                                    disabled={!chaturmasikForm.navkar}
+                                  >
+                                    Next
+                                  </button>
+                                </form>
+                              )}
+
+                              {chaturmasikStep === 4 && (
+                                <form onSubmit={handleChaturmasikSubmit}>
+                                  <h3 style={{ textAlign: "center", color: "#075e54", marginBottom: "15px" }}>
+                                    સ્વાધ્યાય
+                                  </h3>
+
+                                  <div className="rules-note" style={{ background: "#fff8e1", border: "1px solid #ffe082", borderRadius: "8px", padding: "10px", marginBottom: "15px" }}>
+                                    <p style={{ margin: 0, color: "#333", fontSize: "0.95rem" }}>
+                                      Total days: 100 days.
+                                    </p>
+                                  </div>
+
+                                  <div className="form-group" style={{ marginBottom: "15px" }}>
+                                    <label style={{ fontWeight: "bold", display: "block", marginBottom: "10px" }}>
+                                      Topic: અરિહંત વંદનાવલી
+                                    </label>
+                                    <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", cursor: "pointer", fontSize: "0.95rem", lineHeight: "1.3" }}>
+                                      <input
+                                        type="checkbox"
+                                        name="swadhyay"
+                                        checked={chaturmasikForm.swadhyay}
+                                        onChange={handleChaturmasikChange}
+                                        style={{ marginTop: "3px" }}
+                                      />
+                                      <span>I agree to learn "અરિહંત વંદનાવલી" in 100 days.</span>
+                                    </label>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    className="back-button-yatra"
+                                    onClick={handleChaturmasikBack}
+                                  >
+                                    Back
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="back-button-yatra"
+                                    style={{ background: "#e0e0e0", color: "#333" }}
+                                    onClick={handleChaturmasikSkipSwadhyay}
+                                  >
+                                    Skip
+                                  </button>
+                                  <button
+                                    type="submit"
+                                    className="next-button"
+                                    disabled={!chaturmasikForm.swadhyay}
+                                  >
+                                    Next
+                                  </button>
+                                </form>
+                              )}
+
+                              {chaturmasikStep === 5 && (
+                                <form onSubmit={handleChaturmasikSubmit}>
+                                  <h3 style={{ textAlign: "center", color: "#075e54", marginBottom: "15px" }}>
+                                    સજોડે બ્રહ્મચર્ય વ્રત સ્વીકાર
+                                  </h3>
+
+                                  <div className="rules-note" style={{ background: "#fff8e1", border: "1px solid #ffe082", borderRadius: "8px", padding: "10px", marginBottom: "15px" }}>
+                                    <p style={{ margin: 0, color: "#333", fontSize: "0.95rem" }}>
+                                      આ આરાધના બે વ્યક્તિઓ (સજોડે) માટે છે. કૃપા કરીને સાથીદારનું નામ દાખલ કરો અને સંમતિ આપો.
+                                    </p>
+                                  </div>
+
+                                  <div className="form-group" style={{ marginBottom: "15px" }}>
+                                    <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", cursor: "pointer", fontSize: "0.95rem", lineHeight: "1.3", marginBottom: "15px" }}>
+                                      <input
+                                        type="checkbox"
+                                        name="brahmacharya"
+                                        checked={chaturmasikForm.brahmacharya}
+                                        onChange={handleChaturmasikChange}
+                                        style={{ marginTop: "3px" }}
+                                      />
+                                      <span>હું ૧૦૦ દિવસ સજોડે બ્રહ્મચર્ય વ્રત સ્વીકારવા માટે સંમત છું (I agree to do brahmacharya for 100 days)</span>
+                                    </label>
+                                  </div>
+
+                                  {chaturmasikForm.brahmacharya && (
+                                    <div className="form-group" style={{ marginBottom: "15px" }}>
+                                      <label htmlFor="brahmacharyaPartnerName" style={{ fontWeight: "bold", display: "block", marginBottom: "5px" }}>
+                                        સાથીદારનું નામ (Partner's Name)*
+                                      </label>
+                                      <input
+                                        type="text"
+                                        id="brahmacharyaPartnerName"
+                                        name="brahmacharyaPartnerName"
+                                        placeholder="Enter partner's full name"
+                                        value={chaturmasikForm.brahmacharyaPartnerName}
+                                        onChange={handleChaturmasikChange}
+                                        required
+                                        style={{
+                                          width: "100%",
+                                          padding: "8px 12px",
+                                          border: "1px solid #ccc",
+                                          borderRadius: "4px",
+                                          fontSize: "0.95rem"
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    className="back-button-yatra"
+                                    onClick={handleChaturmasikBack}
+                                  >
+                                    Back
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="back-button-yatra"
+                                    style={{ background: "#e0e0e0", color: "#333" }}
+                                    onClick={handleChaturmasikSkipBrahmacharya}
+                                  >
+                                    Skip
+                                  </button>
+                                  <button
+                                    type="submit"
+                                    className="next-button"
+                                    disabled={chaturmasikForm.brahmacharya && !chaturmasikForm.brahmacharyaPartnerName.trim()}
+                                  >
+                                    Next
+                                  </button>
+                                </form>
+                              )}
+
+                              {chaturmasikStep === 6 && (
+                                <form onSubmit={handleChaturmasikFinalSubmit}>
+                                  <h3 style={{ textAlign: "center", color: "#075e54", marginBottom: "15px" }}>
+                                    વિગતો ચકાસો (Preview)
+                                  </h3>
+
+                                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", background: "#f9f9f9", border: "1px solid #ddd", borderRadius: "8px", padding: "15px", marginBottom: "20px", fontSize: "0.95rem", textAlign: "left" }}>
+                                    <div>
+                                      <strong>Name:</strong> <span style={{ float: "right" }}>{chaturmasikForm.fullName}</span>
+                                    </div>
+                                    <hr style={{ margin: "5px 0", border: 0, borderTop: "1px solid #eee" }} />
+                                    <div>
+                                      <strong>Phone:</strong> <span style={{ float: "right" }}>{chaturmasikForm.phone}</span>
+                                    </div>
+                                    <hr style={{ margin: "5px 0", border: 0, borderTop: "1px solid #eee" }} />
+                                    <div>
+                                      <strong>Date of Birth:</strong> <span style={{ float: "right" }}>{chaturmasikForm.dateOfBirth}</span>
+                                    </div>
+                                    <hr style={{ margin: "5px 0", border: 0, borderTop: "1px solid #eee" }} />
+                                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                      <strong>Address:</strong> <span style={{ maxWidth: "60%", textAlign: "right" }}>{chaturmasikForm.address}</span>
+                                    </div>
+                                    <hr style={{ margin: "5px 0", border: 0, borderTop: "1px solid #eee" }} />
+                                    <div>
+                                      <strong>State:</strong> <span style={{ float: "right" }}>Gujarat</span>
+                                    </div>
+                                    <hr style={{ margin: "5px 0", border: 0, borderTop: "1px solid #eee" }} />
+                                    <div>
+                                      <strong>City:</strong> <span style={{ float: "right" }}>{chaturmasikForm.city}</span>
+                                    </div>
+                                    <hr style={{ margin: "5px 0", border: 0, borderTop: "1px solid #eee" }} />
+                                    <div>
+                                      <strong>Sangh Name:</strong> <span style={{ float: "right" }}>{chaturmasikForm.sanghName}</span>
+                                    </div>
+                                    <hr style={{ margin: "5px 0", border: 0, borderTop: "1px solid #eee" }} />
+                                    <div>
+                                      <strong>સામાયિક:</strong> <span style={{ float: "right", color: chaturmasikForm.samayik ? "#075e54" : "#b71c1c", fontWeight: "bold" }}>{chaturmasikForm.samayik ? `${chaturmasikForm.samayik} Samayik` : "Skipped"}</span>
+                                    </div>
+                                    <hr style={{ margin: "5px 0", border: 0, borderTop: "1px solid #eee" }} />
+                                    <div>
+                                      <strong>નવકાર મંત્ર:</strong> <span style={{ float: "right", color: chaturmasikForm.navkar ? "#075e54" : "#b71c1c", fontWeight: "bold" }}>{chaturmasikForm.navkar ? `${chaturmasikForm.navkar} Mala` : "Skipped"}</span>
+                                    </div>
+                                    <hr style={{ margin: "5px 0", border: 0, borderTop: "1px solid #eee" }} />
+                                    <div>
+                                      <strong>સ્વાધ્યાય (અરિહંત વંદનાવલી):</strong> <span style={{ float: "right", color: chaturmasikForm.swadhyay ? "#075e54" : "#b71c1c", fontWeight: "bold" }}>{chaturmasikForm.swadhyay ? "Learned" : "Skipped"}</span>
+                                    </div>
+                                    <hr style={{ margin: "5px 0", border: 0, borderTop: "1px solid #eee" }} />
+                                    <div>
+                                      <strong>સજોડે બ્રહ્મચર્ય વ્રત:</strong> <span style={{ float: "right", color: chaturmasikForm.brahmacharya ? "#075e54" : "#b71c1c", fontWeight: "bold" }}>{chaturmasikForm.brahmacharya ? "Accepted" : "Skipped"}</span>
+                                      {chaturmasikForm.brahmacharya && (
+                                        <div style={{ paddingLeft: "15px", fontSize: "0.85rem", color: "#555", marginTop: "4px" }}>
+                                          └ સાથીદારનું નામ: <span style={{ float: "right", color: "#333", fontWeight: "normal" }}>{chaturmasikForm.brahmacharyaPartnerName}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    className="back-button-yatra"
+                                    onClick={handleChaturmasikBack}
+                                  >
+                                    Back
+                                  </button>
+                                  <button
+                                    type="submit"
+                                    className="next-button"
+                                    disabled={isSubmittingRegistration}
+                                  >
+                                    {isSubmittingRegistration ? "Submitting..." : "Submit"}
+                                  </button>
+                                </form>
+                              )}
+                            </>
                           ) : (
                             <form onSubmit={handleDefaultRegistrationSubmit}>
                               <div className="form-group">

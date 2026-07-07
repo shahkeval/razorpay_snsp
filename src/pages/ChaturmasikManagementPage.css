@@ -1,0 +1,76 @@
+.chaturmasik-management-main {
+  padding: 40px 20px;
+  max-width: 1300px;
+  margin: 0 auto;
+  min-height: calc(100vh - 120px);
+}
+
+.chaturmasik-summary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.chaturmasik-summary-card {
+  min-width: 160px;
+  flex: 1 1 200px;
+  max-width: 280px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: 1px solid #ffe0b2;
+  padding: 20px 15px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease-in-out;
+}
+
+.chaturmasik-summary-card:hover {
+  transform: translateY(-2px);
+}
+
+.chaturmasik-summary-card .label {
+  font-size: 0.95rem;
+  color: #700b0b;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.chaturmasik-summary-card .value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #700b0b;
+}
+
+.chaturmasik-management-content {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+.registration-table .MuiTableHead-root {
+  background: #fff8e1;
+}
+
+.registration-table .MuiTableCell-head {
+  background: #fff8e1;
+}
+
+.registration-table .MuiTable-root {
+  background: unset;
+}
+
+@media (max-width: 575.98px) {
+  .chaturmasik-summary-grid {
+    gap: 10px;
+  }
+  .chaturmasik-summary-card {
+    flex: 1 1 45%;
+  }
+}

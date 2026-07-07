@@ -69,6 +69,7 @@ app.use("/api/vaiyavach", require("./routes/vaiyavchRoutes"));
 app.use("/api/painting_rssm", require("./routes/paintingRSSM"));
 app.use("/api/astaprakari", require("./routes/astaprakariPujaRoutes"));
 app.use("/api/logs", require("./routes/log"));
+app.use("/api/chaturmasik", require("./routes/chaturmasikRoutes"));
 
 // Razorpay webhook endpoint (ensure raw body for signature verification)
 app.post(

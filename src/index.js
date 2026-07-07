@@ -31,6 +31,7 @@ import PaymentManagementPage from './pages/PaymentManagementPage';
 import PaintingRegistrationManagementPage from './pages/PaintingRegistrationManagementPage';
 // import AudiencePoll from './pages/AudiencePoll';
 import AstaprakariManagementPage from './pages/AstaprakariManagementPage';
+import ChaturmasikManagementPage from './pages/ChaturmasikManagementPage';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -66,6 +67,7 @@ root.render(
           <Route path="/admin/paymentmanagement" element={<PaymentManagementPage/>} />
           <Route path="/admin/painting-registrations" element={<PaintingRegistrationManagementPage/>} />
           <Route path="/admin/astaprakaripuja" element={<AstaprakariManagementPage />} />
+          <Route path="/admin/chaturmasik" element={<ChaturmasikManagementPage />} />
           {/* <Route path="audience-poll" element={<AudiencePoll />} /> */}
         </Route>
       </Routes>

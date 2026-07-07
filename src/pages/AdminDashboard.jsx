@@ -39,6 +39,7 @@ const AdminDashboard = () => {
   const [vaiyavachSummary, setVaiyavachSummary] = useState({ totalRecords: 0, twoDaysCount: 0, fourDaysCount: 0 });
   const [paintingSummary, setPaintingSummary] = useState({ totalCount: 0, byPaintingType: [] });
   const [paintingAgeSummary, setPaintingAgeSummary] = useState({ totalCount: 0, byAgeGroup: [] });
+  const [chaturmasikSummary, setChaturmasikSummary] = useState({ totalCount: 0, bySamayik: [], byNavkar: [], bySwadhyay: [], byBrahmacharya: [] });
   const [loadingDonations, setLoadingDonations] = useState(true);
   const [loadingRegistrations, setLoadingRegistrations] = useState(true);
   const [loadingYatra, setLoadingYatra] = useState(true);
@@ -47,6 +48,7 @@ const AdminDashboard = () => {
   const [loadingVaiyavach, setLoadingVaiyavach] = useState(true);
   const [loadingPainting, setLoadingPainting] = useState(true);
   const [loadingPaintingAge, setLoadingPaintingAge] = useState(true);
+  const [loadingChaturmasik, setLoadingChaturmasik] = useState(true);
   const navigate = useNavigate();
   const username = localStorage.getItem('username') || 'Admin';
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -141,6 +143,17 @@ const AdminDashboard = () => {
       setLoadingPaintingAge(false);
     };
 
+    const fetchChaturmasikSummary = async () => {
+      setLoadingChaturmasik(true);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/chaturmasik/summary`);
+        setChaturmasikSummary(res.data);
+      } catch (error) {
+        setChaturmasikSummary({ totalCount: 0, bySamayik: [], byNavkar: [], bySwadhyay: [], byBrahmacharya: [] });
+      }
+      setLoadingChaturmasik(false);
+    };
+
     fetchDonationSummary();
     fetchRegistrationSummary();
     fetchYatraSummary();
@@ -149,6 +162,7 @@ const AdminDashboard = () => {
     fetchVaiyavachSummary();
     fetchPaintingSummary();
     fetchPaintingAgeSummary();
+    fetchChaturmasikSummary();
   }, []);
 
   // Prepare donut data for donations
@@ -192,6 +206,27 @@ const AdminDashboard = () => {
   const paintingAgeDonutData = paintingAgeSummary.byAgeGroup.length > 0
     ? paintingAgeSummary.byAgeGroup
     : [{ ageGroup: 'No Registrations', count: paintingAgeSummary.totalCount }];
+
+  const chaturmasikSamayikOpted = chaturmasikSummary.bySamayik?.reduce((sum, item) => {
+    if (item.target && item.target !== "" && item.target !== "Skipped") {
+      return sum + item.count;
+    }
+    return sum;
+  }, 0) || 0;
+
+  const chaturmasikNavkarOpted = chaturmasikSummary.byNavkar?.reduce((sum, item) => {
+    if (item.target && item.target !== "" && item.target !== "Skipped") {
+      return sum + item.count;
+    }
+    return sum;
+  }, 0) || 0;
+
+  const chaturmasikDonutData = [
+    { category: 'Samayik Opted', count: chaturmasikSamayikOpted },
+    { category: 'Navkar Opted', count: chaturmasikNavkarOpted },
+    { category: 'Swadhyay Opted', count: chaturmasikSummary.bySwadhyay?.find(x => x.consented === true)?.count || 0 },
+    { category: 'Brahmacharya Opted', count: chaturmasikSummary.byBrahmacharya?.find(x => x.consented === true)?.count || 0 },
+  ];
 
   const donutCharts = [
     {
@@ -254,7 +289,7 @@ const AdminDashboard = () => {
       knowMore: () => navigate('/admin/painting-registrations'),
       totalSuffix: ''
     },
-        {
+    {
       label: 'Astaprakari Puja Registrations',
       key: 'astaprakari',
       data: astaprakriDonutData,
@@ -262,6 +297,16 @@ const AdminDashboard = () => {
       nameKey: 'category',
       total: astaprakriSummary.totalRecords,
       knowMore: () => navigate('/admin/astaprakaripuja'),
+      totalSuffix: ''
+    },
+    {
+      label: 'Chaturmasik Registrations',
+      key: 'chaturmasik',
+      data: chaturmasikDonutData,
+      dataKey: 'count',
+      nameKey: 'category',
+      total: chaturmasikSummary.totalCount,
+      knowMore: () => navigate('/admin/chaturmasik'),
       totalSuffix: ''
     },
   ].map((item, idx) => (
@@ -324,7 +369,7 @@ const AdminDashboard = () => {
         <div className="admin-main-content">
           <Typography variant="h3" className="welcome-title">Welcome {username.toLowerCase()},</Typography>
           <div className="donut-row">
-            {loadingDonations || loadingRegistrations || loadingYatra || loadingPayments || loadingVaiyavach || loadingPainting || loadingPaintingAge ? <CircularProgress /> : donutCharts}
+            {loadingDonations || loadingRegistrations || loadingYatra || loadingPayments || loadingVaiyavach || loadingPainting || loadingPaintingAge || loadingChaturmasik ? <CircularProgress /> : donutCharts}
           </div>
         </div>
       </div>
