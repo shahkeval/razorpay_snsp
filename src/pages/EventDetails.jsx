@@ -90,6 +90,7 @@ const EventDetails = () => {
   });
 
   const [chaturmasikStep, setChaturmasikStep] = useState(1);
+  const [chaturmasikRedirectCountdown, setChaturmasikRedirectCountdown] = useState(7);
   const [submittedChaturmasikData, setSubmittedChaturmasikData] = useState(null);
 
   const [isSubmittingDonation, setIsSubmittingDonation] = useState(false);
@@ -585,6 +586,51 @@ const EventDetails = () => {
     }
   }, []);
 
+  const handleChaturmasikSkipBrahmacharya = () => {
+    setChaturmasikForm((prev) => ({
+      ...prev,
+      brahmacharya: false,
+      brahmacharyaPartnerName: "",
+    }));
+    setChaturmasikStep(6);
+  };
+
+  const getChaturmasikAge = () => {
+    if (!chaturmasikForm.dateOfBirth) return 0;
+    const today = new Date();
+    const birthDate = new Date(chaturmasikForm.dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  useEffect(() => {
+    let interval;
+    if (chaturmasikStep === 5) {
+      const age = getChaturmasikAge();
+      const isEligible = age >= 25 && age <= 50;
+      if (!isEligible) {
+        setChaturmasikRedirectCountdown(7);
+        interval = setInterval(() => {
+          setChaturmasikRedirectCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(interval);
+              handleChaturmasikSkipBrahmacharya();
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [chaturmasikStep, chaturmasikForm.dateOfBirth]);
+
   if (!event) {
     return (
       <div className="event-not-found">
@@ -673,14 +719,8 @@ const EventDetails = () => {
     setChaturmasikStep(5);
   };
 
-  const handleChaturmasikSkipBrahmacharya = () => {
-    setChaturmasikForm((prev) => ({
-      ...prev,
-      brahmacharya: false,
-      brahmacharyaPartnerName: "",
-    }));
-    setChaturmasikStep(6);
-  };
+
+
 
   const handleChaturmasikBack = () => {
     setChaturmasikStep((prev) => Math.max(prev - 1, 1));
@@ -696,7 +736,7 @@ const EventDetails = () => {
         dateOfBirth: chaturmasikForm.dateOfBirth,
         address: chaturmasikForm.address,
         state: "Gujarat",
-        city: chaturmasikForm.city,
+        city: "Ahmedabad",
         sanghName: chaturmasikForm.sanghName,
         samayik: chaturmasikForm.samayik || "",
         navkar: chaturmasikForm.navkar || "",
@@ -2326,20 +2366,14 @@ const EventDetails = () => {
                                   </div>
                                   <div className="form-group">
                                     <label htmlFor="chaturmasikCity">City*</label>
-                                    <select
+                                    <input
+                                      type="text"
                                       id="chaturmasikCity"
                                       name="city"
-                                      value={chaturmasikForm.city}
-                                      onChange={handleChaturmasikChange}
+                                      value="Ahmedabad"
+                                      readOnly
                                       required
-                                    >
-                                      <option value="">Select City</option>
-                                      {cities.filter(c => c.stateCode === "GJ").map((city) => (
-                                        <option key={city.name} value={city.name}>
-                                          {city.name}
-                                        </option>
-                                      ))}
-                                    </select>
+                                    />
                                   </div>
                                   <div className="form-group">
                                     <label htmlFor="chaturmasikSanghName">Sangh Name*</label>
@@ -2570,75 +2604,142 @@ const EventDetails = () => {
 
                               {chaturmasikStep === 5 && (
                                 <form onSubmit={handleChaturmasikSubmit}>
-                                  <h3 style={{ textAlign: "center", color: "#075e54", marginBottom: "15px" }}>
-                                    સજોડે બ્રહ્મચર્ય વ્રત સ્વીકાર
-                                  </h3>
+                                  {(() => {
+                                    const age = getChaturmasikAge();
+                                    const isEligible = age >= 25 && age <= 50;
 
-                                  <div className="rules-note" style={{ background: "#fff8e1", border: "1px solid #ffe082", borderRadius: "8px", padding: "10px", marginBottom: "15px" }}>
-                                    <p style={{ margin: 0, color: "#333", fontSize: "0.95rem" }}>
-                                      આ આરાધના બે વ્યક્તિઓ (સજોડે) માટે છે. કૃપા કરીને સાથીદારનું નામ દાખલ કરો અને સંમતિ આપો.
-                                    </p>
-                                  </div>
+                                    if (!isEligible) {
+                                      return (
+                                        <div style={{ textAlign: "center", padding: "20px 0" }}>
+                                          <style>{`
+                                            @keyframes spin {
+                                              0% { transform: rotate(0deg); }
+                                              100% { transform: rotate(360deg); }
+                                            }
+                                          `}</style>
+                                          <div className="rules-note" style={{ background: "#ffebee", border: "1px solid #ffcdd2", borderRadius: "8px", padding: "15px", marginBottom: "20px" }}>
+                                            <p style={{ margin: "0 0 10px 0", color: "#c62828", fontWeight: "bold", fontSize: "1.1rem" }}>
+                                              અયોગ્યતા સૂચના / અપત્રતા સૂચના
+                                            </p>
+                                            <p style={{ margin: "0 0 10px 0", color: "#333", fontSize: "1rem", lineHeight: "1.5" }}>
+                                              સજોડે બ્રહ્મચર્ય વ્રત સ્વીકાર આરાધના માટે તમારી ઉંમર ૨૫ થી ૫૦ વર્ષની વચ્ચે હોવી જરૂરી છે. તેથી તમે આ આરાધના માટે પાત્ર નથી.
+                                            </p>
+                                            <p style={{ margin: 0, color: "#333", fontSize: "1rem", lineHeight: "1.5" }}>
+                                              सजोड़े ब्रह्मचर्य व्रत स्वीकार आराधना के लिए आपकी आयु २५ से ५० वर्ष के बीच होनी चाहिए। इसलिए आप इस आराधना के लिए पात्र नहीं हैं।
+                                            </p>
+                                          </div>
+                                          
+                                          {/* Small loading spinner / indicator */}
+                                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
+                                            <div className="loading-spinner-small" style={{
+                                              width: "24px",
+                                              height: "24px",
+                                              border: "3px solid #f3f3f3",
+                                              borderTop: "3px solid #b71c1c",
+                                              borderRadius: "50%",
+                                              animation: "spin 1s linear infinite"
+                                            }}></div>
+                                            <span style={{ fontSize: "0.85rem", color: "#666" }}>
+                                              Redirecting in {chaturmasikRedirectCountdown} seconds...
+                                            </span>
+                                          </div>
 
-                                  <div className="form-group" style={{ marginBottom: "15px" }}>
-                                    <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", cursor: "pointer", fontSize: "0.95rem", lineHeight: "1.3", marginBottom: "15px" }}>
-                                      <input
-                                        type="checkbox"
-                                        name="brahmacharya"
-                                        checked={chaturmasikForm.brahmacharya}
-                                        onChange={handleChaturmasikChange}
-                                        style={{ marginTop: "3px" }}
-                                      />
-                                      <span>હું ૧૦૦ દિવસ સજોડે બ્રહ્મચર્ય વ્રત સ્વીકારવા માટે સંમત છું (I agree to do brahmacharya for 100 days)</span>
-                                    </label>
-                                  </div>
+                                          <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+                                            <button
+                                              type="button"
+                                              className="back-button-yatra"
+                                              onClick={handleChaturmasikBack}
+                                            >
+                                              Back
+                                            </button>
+                                            <button
+                                              type="button"
+                                              className="back-button-yatra"
+                                              style={{ background: "#e0e0e0", color: "#333" }}
+                                              onClick={handleChaturmasikSkipBrahmacharya}
+                                            >
+                                              Skip
+                                            </button>
+                                          </div>
+                                        </div>
+                                      );
+                                    }
 
-                                  {chaturmasikForm.brahmacharya && (
-                                    <div className="form-group" style={{ marginBottom: "15px" }}>
-                                      <label htmlFor="brahmacharyaPartnerName" style={{ fontWeight: "bold", display: "block", marginBottom: "5px" }}>
-                                        સાથીદારનું નામ (Partner's Name)*
-                                      </label>
-                                      <input
-                                        type="text"
-                                        id="brahmacharyaPartnerName"
-                                        name="brahmacharyaPartnerName"
-                                        placeholder="Enter partner's full name"
-                                        value={chaturmasikForm.brahmacharyaPartnerName}
-                                        onChange={handleChaturmasikChange}
-                                        required
-                                        style={{
-                                          width: "100%",
-                                          padding: "8px 12px",
-                                          border: "1px solid #ccc",
-                                          borderRadius: "4px",
-                                          fontSize: "0.95rem"
-                                        }}
-                                      />
-                                    </div>
-                                  )}
+                                    // Eligible view
+                                    return (
+                                      <>
+                                        <h3 style={{ textAlign: "center", color: "#075e54", marginBottom: "15px" }}>
+                                          સજોડે બ્રહ્મચર્ય વ્રત સ્વીકાર
+                                        </h3>
 
-                                  <button
-                                    type="button"
-                                    className="back-button-yatra"
-                                    onClick={handleChaturmasikBack}
-                                  >
-                                    Back
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="back-button-yatra"
-                                    style={{ background: "#e0e0e0", color: "#333" }}
-                                    onClick={handleChaturmasikSkipBrahmacharya}
-                                  >
-                                    Skip
-                                  </button>
-                                  <button
-                                    type="submit"
-                                    className="next-button"
-                                    disabled={chaturmasikForm.brahmacharya && !chaturmasikForm.brahmacharyaPartnerName.trim()}
-                                  >
-                                    Next
-                                  </button>
+                                        <div className="rules-note" style={{ background: "#fff8e1", border: "1px solid #ffe082", borderRadius: "8px", padding: "10px", marginBottom: "15px" }}>
+                                          <p style={{ margin: 0, color: "#333", fontSize: "0.95rem" }}>
+                                            આ આરાધના બે વ્યક્તિઓ (સજોડે) માટે છે. કૃપા કરીને સાથીદારનું નામ દાખલ કરો અને સંમતિ આપો.
+                                          </p>
+                                        </div>
+
+                                        <div className="form-group" style={{ marginBottom: "15px" }}>
+                                          <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", cursor: "pointer", fontSize: "0.95rem", lineHeight: "1.3", marginBottom: "15px" }}>
+                                            <input
+                                              type="checkbox"
+                                              name="brahmacharya"
+                                              checked={chaturmasikForm.brahmacharya}
+                                              onChange={handleChaturmasikChange}
+                                              style={{ marginTop: "3px" }}
+                                            />
+                                            <span>હું ૧૦૦ દિવસ સજોડે બ્રહ્મચર્ય વ્રત સ્વીકારવા માટે સંમત છું (I agree to do brahmacharya for 100 days)</span>
+                                          </label>
+                                        </div>
+
+                                        {chaturmasikForm.brahmacharya && (
+                                          <div className="form-group" style={{ marginBottom: "15px" }}>
+                                            <label htmlFor="brahmacharyaPartnerName" style={{ fontWeight: "bold", display: "block", marginBottom: "5px" }}>
+                                              સાથીદારનું નામ (Partner's Name)*
+                                            </label>
+                                            <input
+                                              type="text"
+                                              id="brahmacharyaPartnerName"
+                                              name="brahmacharyaPartnerName"
+                                              placeholder="Enter partner's full name"
+                                              value={chaturmasikForm.brahmacharyaPartnerName}
+                                              onChange={handleChaturmasikChange}
+                                              required
+                                              style={{
+                                                width: "100%",
+                                                padding: "8px 12px",
+                                                border: "1px solid #ccc",
+                                                borderRadius: "4px",
+                                                fontSize: "0.95rem"
+                                              }}
+                                            />
+                                          </div>
+                                        )}
+
+                                        <button
+                                          type="button"
+                                          className="back-button-yatra"
+                                          onClick={handleChaturmasikBack}
+                                        >
+                                          Back
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className="back-button-yatra"
+                                          style={{ background: "#e0e0e0", color: "#333" }}
+                                          onClick={handleChaturmasikSkipBrahmacharya}
+                                        >
+                                          Skip
+                                        </button>
+                                        <button
+                                          type="submit"
+                                          className="next-button"
+                                          disabled={chaturmasikForm.brahmacharya && !chaturmasikForm.brahmacharyaPartnerName.trim()}
+                                        >
+                                          Next
+                                        </button>
+                                      </>
+                                    );
+                                  })()}
                                 </form>
                               )}
 
