@@ -2293,6 +2293,123 @@ const EventDetails = () => {
                             </div>
                           ) : event.id === "chaturmashik_aradhna_2026" ? (
                             <>
+                              <div
+                                className="registration-closed-message"
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  background: "#fff8e1",
+                                  border: "1px solid #ffe082",
+                                  borderRadius: "16px",
+                                  padding: "32px 16px",
+                                  margin: "32px 0",
+                                  boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
+                                }}
+                              >
+                                <h3
+                                  style={{
+                                    color: "#b71c1c",
+                                    marginBottom: 12,
+                                    fontWeight: 700,
+                                    fontSize: "2rem",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  Registration Closed
+                                </h3>
+                                <p
+                                  style={{
+                                    color: "#333",
+                                    fontSize: "1.1rem",
+                                    textAlign: "center",
+                                    marginBottom: 12,
+                                    maxWidth: 400,
+                                  }}
+                                >
+                                  Thank you for your interest!
+                                  <br />
+                                  Registration for this event is now closed.
+                                  <br />
+                                  <span
+                                    style={{ color: "#075e54", fontWeight: 600 }}
+                                  >
+                                    Want updates on our next events?
+                                  </span>
+                                  <br />
+                                  Join our WhatsApp group below to stay informed
+                                  and connected.
+                                  {/* <p style={{ color: "red", fontWeight: 600 }}>
+                                    Phone Numbers:- +91 79845 47655 , +91 96249
+                                    72659
+                                  </p> */}
+                                </p>
+                                <p
+                                  style={{
+                                    color: "#333",
+                                    fontSize: "1.1rem",
+                                    textAlign: "center",
+                                    marginBottom: 24,
+                                    maxWidth: 400,
+                                    fontFamily:
+                                      "Noto Sans Gujarati, Arial, sans-serif",
+                                  }}
+                                >
+                                  તમારી રુચિ બદલ આભાર!
+                                  <br />
+                                  આ કાર્યક્રમ માટે નોંધણી હવે બંધ છે.
+                                  <br />
+                                  <span
+                                    style={{ color: "#075e54", fontWeight: 600 }}
+                                  >
+                                    શું તમે અમારી આગામી કાર્યક્રમો વિશે અપડેટ્સ
+                                    મેળવવા માંગો છો?
+                                  </span>
+                                  <br />
+                                  માહિતી અને સંપર્કમાં રહેવા માટે નીચે આપેલા અમારા
+                                  WhatsApp ગ્રુપમાં જોડાઓ.
+                                </p>
+                                <a
+                                  href="https://chat.whatsapp.com/DdNY8vdh03K0cPouuBZupT"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    textDecoration: "none",
+                                  }}
+                                >
+                                  <QRCodeSVG
+                                    value="https://chat.whatsapp.com/DdNY8vdh03K0cPouuBZupT"
+                                    size={160}
+                                    style={{
+                                      border: "4px solid #25d366",
+                                      borderRadius: 12,
+                                      background: "#fff",
+                                      cursor: "pointer",
+                                      marginBottom: 8,
+                                      transition: "box-shadow 0.2s",
+                                      boxShadow:
+                                        "0 2px 8px rgba(37,211,102,0.15)",
+                                    }}
+                                  />
+                                  <span
+                                    style={{
+                                      color: "#075e54",
+                                      fontWeight: 600,
+                                      fontSize: "1rem",
+                                      marginTop: 4,
+                                      textAlign: "center",
+                                    }}
+                                  >
+                                    Tap QR or click here to join WhatsApp group
+                                  </span>
+                                </a>
+                              </div>
+
+                              {/*
                               <h2>Chaturmasik Registration</h2>
                               <div className="progress-bar">
                                 <div
@@ -2629,7 +2746,7 @@ const EventDetails = () => {
                                             </p>
                                           </div>
                                           
-                                          {/* Small loading spinner / indicator */}
+                                          // Small loading spinner indicator
                                           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
                                             <div className="loading-spinner-small" style={{
                                               width: "24px",
@@ -2816,6 +2933,7 @@ const EventDetails = () => {
                                   </button>
                                 </form>
                               )}
+                              */}
                             </>
                           ) : (
                             <form onSubmit={handleDefaultRegistrationSubmit}>
